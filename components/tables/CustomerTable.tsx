@@ -1,6 +1,7 @@
 "use client";
 
 import { Customer } from "@/types/customer";
+import { useRouter } from "next/navigation";
 
 type Props = {
   customers: Customer[];
@@ -13,6 +14,8 @@ export default function CustomerTable({
   onDelete,
   onEdit,
 }: Props) {
+
+  const router = useRouter();
   if (customers.length === 0) {
     return (
       <div className="mt-8 rounded-xl bg-slate-800 p-6 text-center text-gray-300">
@@ -61,8 +64,24 @@ export default function CustomerTable({
                 <div className="flex justify-center gap-2">
 
                   <button
-                    onClick={() => onEdit(customer)}
-                    className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+                   onClick={() => {
+
+  localStorage.setItem(
+    "editCustomer",
+    JSON.stringify(customer)
+  );
+
+  if (customer.category === "paint") {
+
+    router.push("/paints");
+
+  } else {
+
+    router.push("/timbers");
+
+  }
+
+}}
                   >
                     Edit
                   </button>
