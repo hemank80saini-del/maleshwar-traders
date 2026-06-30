@@ -1,34 +1,147 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { v4 as uuid } from "uuid";
+
+import { Customer } from "@/types/customer";
+import {
+  addCustomer,
+  getCustomers,
+  deleteCustomer,
+  updateCustomer,
+} from "@/lib/storage";
+
+import CustomerTable from "@/components/tables/CustomerTable";
 
 export default function PaintsPage() {
   const [customerName, setCustomerName] = useState("");
   const [contact, setContact] = useState("");
+
   const [paintName, setPaintName] = useState("");
   const [paintNo, setPaintNo] = useState("");
+
   const [totalAmount, setTotalAmount] = useState("");
   const [paidAmount, setPaidAmount] = useState("");
 
+  const [customers, setCustomers] = useState<Customer[]>([]);
+
+  const [search, setSearch] = useState("");
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const dueAmount =
-    (Number(totalAmount) || 0) - (Number(paidAmount) || 0);
+    (Number(totalAmount) || 0) -
+    (Number(paidAmount) || 0);
+
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  function loadCustomers() {
+    const data = getCustomers().filter(
+      (item) => item.category === "paint"
+    );
+
+    setCustomers(data);
+  }
+
+  function clearForm() {
+    setCustomerName("");
+    setContact("");
+    setPaintName("");
+    setPaintNo("");
+    setTotalAmount("");
+    setPaidAmount("");
+    setEditingId(null);
+  }
+
+  function saveCustomer() {
+    if (
+      customerName.trim() === "" ||
+      contact.trim() === "" ||
+      paintName.trim() === "" ||
+      paintNo.trim() === ""
+    ) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    const customer: Customer = {
+      id: editingId ?? uuid(),
+
+      category: "paint",
+
+      customerName,
+      contact,
+
+      productName: paintName,
+      productCode: paintNo,
+
+      totalAmount: Number(totalAmount),
+      paidAmount: Number(paidAmount),
+      dueAmount,
+
+      createdAt: new Date().toLocaleString(),
+    };
+
+    if (editingId) {
+      updateCustomer(customer);
+    } else {
+      addCustomer(customer);
+    }
+
+    loadCustomers();
+    clearForm();
+  }
+
+  function removeCustomer(id: string) {
+    if (!confirm("Delete this customer?")) return;
+
+    deleteCustomer(id);
+
+    loadCustomers();
+  }
+
+  function editCustomer(customer: Customer) {
+    setEditingId(customer.id);
+
+    setCustomerName(customer.customerName);
+    setContact(customer.contact);
+
+    setPaintName(customer.productName);
+    setPaintNo(customer.productCode);
+
+    setTotalAmount(customer.totalAmount.toString());
+    setPaidAmount(customer.paidAmount.toString());
+  }
+
+  const filteredCustomers = customers.filter((customer) => {
+    const value = search.toLowerCase();
+
+    return (
+      customer.customerName.toLowerCase().includes(value) ||
+      customer.contact.includes(value) ||
+      customer.productName.toLowerCase().includes(value) ||
+      customer.productCode.toLowerCase().includes(value)
+    );
+  });
 
   return (
-    <div className="min-h-screen bg-[#0f172a] py-10 px-4">
-      <div className="max-w-5xl mx-auto bg-[#1e293b] rounded-2xl shadow-2xl border border-green-700 p-8">
+        <div className="min-h-screen bg-[#0f172a] py-10 px-4">
+      <div className="max-w-6xl mx-auto bg-[#1e293b] rounded-2xl shadow-2xl border border-green-700 p-8">
 
         <h1 className="text-5xl font-bold text-green-400 text-center mb-10">
           Premium Paints
         </h1>
 
-        <div className="grid gap-5">
+        <div className="grid md:grid-cols-2 gap-5">
 
           <input
             type="text"
             placeholder="Customer Name"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
-            className="w-full p-4 rounded-xl bg-slate-800 border border-green-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
           />
 
           <input
@@ -36,7 +149,7 @@ export default function PaintsPage() {
             placeholder="Contact Number"
             value={contact}
             onChange={(e) => setContact(e.target.value)}
-            className="w-full p-4 rounded-xl bg-slate-800 border border-green-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
           />
 
           <input
@@ -44,15 +157,15 @@ export default function PaintsPage() {
             placeholder="Paint Name"
             value={paintName}
             onChange={(e) => setPaintName(e.target.value)}
-            className="w-full p-4 rounded-xl bg-slate-800 border border-green-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
           />
 
           <input
             type="text"
-            placeholder="Paint Number / Shade Code"
+            placeholder="Paint Number / Shade"
             value={paintNo}
             onChange={(e) => setPaintNo(e.target.value)}
-            className="w-full p-4 rounded-xl bg-slate-800 border border-green-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
           />
 
           <input
@@ -60,7 +173,7 @@ export default function PaintsPage() {
             placeholder="Total Amount"
             value={totalAmount}
             onChange={(e) => setTotalAmount(e.target.value)}
-            className="w-full p-4 rounded-xl bg-slate-800 border border-green-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
           />
 
           <input
@@ -68,21 +181,56 @@ export default function PaintsPage() {
             placeholder="Amount Paid"
             value={paidAmount}
             onChange={(e) => setPaidAmount(e.target.value)}
-            className="w-full p-4 rounded-xl bg-slate-800 border border-green-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
           />
 
+        </div>
+
+        <div className="mt-5">
+
           <input
-            type="text"
-            value={`Due Amount : ₹ ${dueAmount}`}
             readOnly
+            value={`Due Amount : ₹ ${dueAmount}`}
             className="w-full p-4 rounded-xl bg-slate-900 border border-yellow-500 text-yellow-400 font-bold"
           />
 
-          <button className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 rounded-xl transition">
-            Save Customer
+        </div>
+
+        <div className="mt-6 flex gap-4">
+
+          <button
+            onClick={saveCustomer}
+            className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-xl"
+          >
+            {editingId ? "Update Customer" : "Save Customer"}
+          </button>
+
+          <button
+            onClick={clearForm}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl"
+          >
+            Clear
           </button>
 
         </div>
+
+        <div className="mt-8">
+
+          <input
+            type="text"
+            placeholder="Search Customer..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full p-4 rounded-xl bg-slate-800 border border-blue-500 text-white"
+          />
+
+        </div>
+
+        <CustomerTable
+          customers={filteredCustomers}
+          onDelete={removeCustomer}
+          onEdit={editCustomer}
+        />
 
       </div>
     </div>
