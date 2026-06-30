@@ -1,6 +1,8 @@
 export interface Customer {
   id: string;
 
+  category: "paint" | "timber";
+
   customerName: string;
   contact: string;
 
@@ -12,8 +14,6 @@ export interface Customer {
   totalAmount: number;
   paidAmount: number;
   dueAmount: number;
-
-  category: "paint" | "timber";
 
   createdAt: string;
 }
