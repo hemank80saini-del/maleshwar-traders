@@ -20,6 +20,11 @@ export default function Sidebar() {
     },
 
     {
+      title: "🧱 POP Sales",
+      link: "/pop",
+    },
+
+    {
       title: "🪵 Timber Sales",
       link: "/timbers",
     },
@@ -40,7 +45,8 @@ export default function Sidebar() {
     },
 
   ];
-    return (
+
+  return (
 
     <aside className="w-72 min-h-screen bg-slate-900 border-r border-green-700">
 

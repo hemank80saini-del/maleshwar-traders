@@ -26,6 +26,8 @@ export default function StockPage() {
 
   const [price, setPrice] = useState("");
 
+  const [sellingPrice, setSellingPrice] = useState("");
+
   const [editingId, setEditingId] =
     useState<string | null>(null);
 
@@ -58,6 +60,8 @@ export default function StockPage() {
 
     setPrice("");
 
+    setSellingPrice("");
+
     setEditingId(null);
 
   }
@@ -87,6 +91,8 @@ export default function StockPage() {
       brand,
 
       quantity: Number(quantity),
+
+      sellingPrice: Number(sellingPrice),
 
       price: Number(price),
 
@@ -186,6 +192,14 @@ export default function StockPage() {
         onChange={(e) => setPrice(e.target.value)}
         className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
       />
+
+      <input
+  type="number"
+  placeholder="Selling Price"
+  value={sellingPrice}
+  onChange={(e) => setSellingPrice(e.target.value)}
+  className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+/>
 
     </div>
 

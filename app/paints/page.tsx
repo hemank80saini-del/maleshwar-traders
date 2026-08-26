@@ -20,6 +20,15 @@ import {
 import { Customer } from "@/types/customer";
 import { Stock } from "@/types/stock";
 
+type SalePaint = {
+  paintName: string;
+  shadeCode: string;
+  brand: string;
+  purchasePrice: number;
+  sellingPrice: number;
+  quantity: number;
+};
+
 export default function PaintsPage() {
 
   const [customerName, setCustomerName] =
@@ -28,6 +37,7 @@ export default function PaintsPage() {
   const [contact, setContact] =
     useState("");
 
+  // Current paint being selected
   const [paintName, setPaintName] =
     useState("");
 
@@ -35,6 +45,9 @@ export default function PaintsPage() {
     useState("");
 
   const [brand, setBrand] =
+    useState("");
+
+  const [purchasePrice, setPurchasePrice] =
     useState("");
 
   const [price, setPrice] =
@@ -46,8 +59,21 @@ export default function PaintsPage() {
   const [quantitySold, setQuantitySold] =
     useState("");
 
-  const [totalAmount, setTotalAmount] =
+  // Multiple paints
+  const [paints, setPaints] =
+    useState<SalePaint[]>([]);
+
+  // Accessories
+  const [accessoryName, setAccessoryName] =
     useState("");
+
+  const [accessoryPrice, setAccessoryPrice] =
+    useState("");
+
+  const [accessories, setAccessories] =
+    useState<
+      { name: string; price: number }[]
+    >([]);
 
   const [paidAmount, setPaidAmount] =
     useState("");
@@ -64,444 +90,1600 @@ export default function PaintsPage() {
   const [editingId, setEditingId] =
     useState<string | null>(null);
 
-  const dueAmount =
-    (Number(totalAmount) || 0) -
-    (Number(paidAmount) || 0);
 
-  useEffect(() => {
+  /*
+    PAINTS TOTAL
+  */
 
-  loadCustomers();
-
-  const data = localStorage.getItem("editCustomer");
-
-  if (!data) return;
-
-  const customer = JSON.parse(data);
-
-  setEditingId(customer.id);
-
-  setCustomerName(customer.customerName);
-
-  setContact(customer.contact);
-
-  setPaintName(customer.productName);
-
-  setPaintNo(customer.productCode);
-  const stockItem = getPaintStock().find(
-  (item) => item.productName === customer.productName
-);
-
-if (stockItem) {
-
-  setBrand(stockItem.brand);
-
-  setPrice(stockItem.price.toString());
-
-  setAvailableStock(stockItem.quantity);
-
-}
-
-  setTotalAmount(customer.totalAmount.toString());
-
-  setPaidAmount(customer.paidAmount.toString());
-
-  localStorage.removeItem("editCustomer");
-
-}, []);
-    function loadCustomers() {
-
-    const customerData = getCustomers().filter(
-      (item) => item.category === "paint"
+  const paintsTotal =
+    paints.reduce(
+      (sum, paint) =>
+        sum +
+        paint.sellingPrice *
+          paint.quantity,
+      0
     );
 
-    const stockData = getPaintStock();
+
+  /*
+    ACCESSORIES TOTAL
+  */
+
+  const accessoriesTotal =
+    accessories.reduce(
+      (sum, item) =>
+        sum + item.price,
+      0
+    );
+
+
+  /*
+    FINAL TOTAL
+  */
+
+  const totalAmount =
+    paintsTotal +
+    accessoriesTotal;
+
+
+  /*
+    DUE
+  */
+
+  const dueAmount =
+    totalAmount -
+    (Number(paidAmount) || 0);
+
+
+  /*
+    LOAD CUSTOMERS + STOCK
+  */
+
+  function loadCustomers() {
+
+    const customerData =
+      getCustomers().filter(
+        (item) =>
+          item.category === "paint"
+      );
+
+    const stockData =
+      getPaintStock();
 
     setCustomers(customerData);
 
     setPaintStock(stockData);
-
   }
+
+
+  /*
+    PAGE LOAD
+  */
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+
+    loadCustomers();
+
+    const data =
+      localStorage.getItem(
+        "editCustomer"
+      );
+
+    if (!data) {
+      return;
+    }
+
+    const customer: Customer =
+      JSON.parse(data);
+
+    setEditingId(customer.id);
+
+    setCustomerName(
+      customer.customerName
+    );
+
+    setContact(
+      customer.contact
+    );
+
+    /*
+      NEW MULTIPLE PAINT DATA
+    */
+
+    if (
+      customer.paints &&
+      customer.paints.length > 0
+    ) {
+
+      setPaints(
+        customer.paints
+      );
+
+      /*
+        Current paint fields
+        first paint se fill honge
+      */
+
+      const firstPaint =
+        customer.paints[0];
+
+      setPaintName(
+        firstPaint.paintName
+      );
+
+      setPaintNo(
+        firstPaint.shadeCode
+      );
+
+      setBrand(
+        firstPaint.brand
+      );
+
+      setPurchasePrice(
+        firstPaint.purchasePrice.toString()
+      );
+
+      setPrice(
+        firstPaint.sellingPrice.toString()
+      );
+
+      const stockItem =
+        getPaintStock().find(
+          (item) =>
+            item.productCode
+              .toLowerCase() ===
+            firstPaint.shadeCode
+              .toLowerCase()
+        );
+
+      if (stockItem) {
+
+        setAvailableStock(
+          stockItem.quantity
+        );
+
+      }
+
+      setQuantitySold(
+        firstPaint.quantity.toString()
+      );
+
+    } else {
+
+      /*
+        OLD CUSTOMER DATA SUPPORT
+      */
+
+      setPaintName(
+        customer.productName
+      );
+
+      setPaintNo(
+        customer.productCode
+      );
+
+      const stockItem =
+        getPaintStock().find(
+          (item) =>
+            item.productName ===
+            customer.productName
+        );
+
+      if (stockItem) {
+
+        setBrand(
+          stockItem.brand
+        );
+
+        setPurchasePrice(
+          stockItem.price?.toString() ||
+          ""
+        );
+
+        setPrice(
+          stockItem.sellingPrice?.toString() ||
+          stockItem.price?.toString() ||
+          ""
+        );
+
+        setAvailableStock(
+          stockItem.quantity
+        );
+
+      }
+
+      setQuantitySold(
+        customer.quantitySold?.toString() ||
+        ""
+      );
+    }
+
+    setPaidAmount(
+      customer.paidAmount.toString()
+    );
+
+    setAccessories(
+      customer.accessories ||
+      []
+    );
+
+    localStorage.removeItem(
+      "editCustomer"
+    );
+
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+
+  /*
+    SELECT PAINT
+  */
+
+  function selectPaint(
+    selected: Stock
+  ) {
+
+    setPaintName(
+      selected.productName
+    );
+
+    setPaintNo(
+      selected.productCode
+    );
+
+    setBrand(
+      selected.brand
+    );
+
+    setPurchasePrice(
+      selected.price?.toString() ||
+      ""
+    );
+
+    const sellingPrice =
+      selected.sellingPrice?.toString() ||
+      selected.price?.toString() ||
+      "";
+
+    setPrice(
+      sellingPrice
+    );
+
+    setAvailableStock(
+      selected.quantity
+    );
+  }
+
+
+  /*
+    SELECT PAINT FROM DROPDOWN
+  */
+
+  function handlePaintSelect(
+    value: string
+  ) {
+
+    const selected =
+      paintStock.find(
+        (item) =>
+          item.productName ===
+          value
+      );
+
+    if (selected) {
+
+      selectPaint(
+        selected
+      );
+
+    }
+  }
+
+
+  /*
+    SHADE CODE SEARCH
+  */
+
+  function handleShadeCode(
+    code: string
+  ) {
+
+    setPaintNo(code);
+
+    const selected =
+      paintStock.find(
+        (item) =>
+          item.productCode
+            .toLowerCase()
+            .trim() ===
+          code
+            .toLowerCase()
+            .trim()
+      );
+
+    if (selected) {
+
+      selectPaint(
+        selected
+      );
+
+    } else {
+
+      setPaintName("");
+      setBrand("");
+
+      setPurchasePrice("");
+      setPrice("");
+
+      setAvailableStock(0);
+    }
+  }
+
+
+  /*
+    ADD PAINT
+  */
+
+  function addPaint() {
+
+    if (
+      !paintName ||
+      !paintNo ||
+      !price ||
+      !quantitySold
+    ) {
+
+      alert(
+        "Please select a paint, shade code and quantity."
+      );
+
+      return;
+    }
+
+    const quantity =
+      Number(quantitySold);
+
+    if (
+      quantity <= 0
+    ) {
+
+      alert(
+        "Please enter a valid quantity."
+      );
+
+      return;
+    }
+
+    /*
+      Check if same paint already
+      added in current sale
+    */
+
+    const existingIndex =
+      paints.findIndex(
+        (paint) =>
+          paint.shadeCode
+            .toLowerCase() ===
+          paintNo
+            .toLowerCase()
+      );
+
+
+    if (
+      existingIndex !== -1
+    ) {
+
+      const updatedPaints =
+        [...paints];
+
+      const existingPaint =
+        updatedPaints[
+          existingIndex
+        ];
+
+      const newQuantity =
+        existingPaint.quantity +
+        quantity;
+
+      const stockItem =
+        paintStock.find(
+          (item) =>
+            item.productCode
+              .toLowerCase() ===
+            paintNo
+              .toLowerCase()
+        );
+
+      if (
+        stockItem &&
+        newQuantity >
+          stockItem.quantity
+      ) {
+
+        alert(
+          "Not enough stock available."
+        );
+
+        return;
+      }
+
+      updatedPaints[
+        existingIndex
+      ] = {
+        ...existingPaint,
+        quantity:
+          newQuantity,
+      };
+
+      setPaints(
+        updatedPaints
+      );
+
+    } else {
+
+      if (
+        quantity >
+        availableStock
+      ) {
+
+        alert(
+          "Not enough stock available."
+        );
+
+        return;
+      }
+
+      const newPaint: SalePaint = {
+
+        paintName,
+
+        shadeCode:
+          paintNo,
+
+        brand,
+
+        purchasePrice:
+          Number(purchasePrice) || 0,
+
+        sellingPrice:
+          Number(price),
+
+        quantity,
+
+      };
+
+      setPaints([
+        ...paints,
+        newPaint,
+      ]);
+
+    }
+
+
+    /*
+      Clear current paint
+      fields for next paint
+    */
+
+    setPaintName("");
+    setPaintNo("");
+    setBrand("");
+
+    setPurchasePrice("");
+    setPrice("");
+
+    setAvailableStock(0);
+    setQuantitySold("");
+  }
+
+
+  /*
+    REMOVE PAINT
+  */
+
+  function removePaint(
+    index: number
+  ) {
+
+    setPaints(
+      paints.filter(
+        (_, i) =>
+          i !== index
+      )
+    );
+  }
+
+
+  /*
+    ADD ACCESSORY
+  */
+
+  function addAccessory() {
+
+    const name =
+      accessoryName.trim();
+
+    const priceValue =
+      Number(accessoryPrice);
+
+    if (!name) {
+
+      alert(
+        "Please enter accessory name."
+      );
+
+      return;
+    }
+
+    if (
+      !accessoryPrice ||
+      priceValue <= 0
+    ) {
+
+      alert(
+        "Please enter a valid accessory price."
+      );
+
+      return;
+    }
+
+    setAccessories([
+      ...accessories,
+      {
+        name,
+        price:
+          priceValue,
+      },
+    ]);
+
+    setAccessoryName("");
+    setAccessoryPrice("");
+  }
+
+
+  /*
+    REMOVE ACCESSORY
+  */
+
+  function removeAccessory(
+    index: number
+  ) {
+
+    setAccessories(
+      accessories.filter(
+        (_, i) =>
+          i !== index
+      )
+    );
+  }
+
+
+  /*
+    CLEAR FORM
+  */
 
   function clearForm() {
 
     setCustomerName("");
-
     setContact("");
 
     setPaintName("");
-
     setPaintNo("");
-
     setBrand("");
 
+    setPurchasePrice("");
     setPrice("");
 
     setAvailableStock(0);
-
     setQuantitySold("");
 
-    setTotalAmount("");
+    setPaints([]);
+
+    setAccessoryName("");
+    setAccessoryPrice("");
+    setAccessories([]);
 
     setPaidAmount("");
 
     setEditingId(null);
-
   }
 
-  function calculateTotal(qty: string, itemPrice: string) {
 
-    if (!qty || !itemPrice) {
+  /*
+    SAVE CUSTOMER
+  */
 
-      setTotalAmount("");
-
-      return;
-
-    }
-
-    const total =
-      Number(qty) * Number(itemPrice);
-
-    setTotalAmount(total.toString());
-
-  }
-    function saveCustomer() {
+  function saveCustomer() {
 
     if (
       customerName.trim() === "" ||
-      contact.trim() === "" ||
-      paintName.trim() === "" ||
-      quantitySold.trim() === ""
+      contact.trim() === ""
     ) {
-      alert("Please fill all fields");
+
+      alert(
+        "Please fill customer details."
+      );
+
       return;
     }
 
-    const stockItem = paintStock.find(
-      (item) => item.productName === paintName
-    );
 
-    if (!stockItem) {
-      alert("Paint not found.");
+    if (
+      paints.length === 0
+    ) {
+
+      alert(
+        "Please add at least one paint."
+      );
+
       return;
     }
 
-    if (Number(quantitySold) > stockItem.quantity) {
-      alert("Not enough stock available.");
-      return;
+
+    /*
+      Final stock validation
+    */
+
+    for (
+      const paint of paints
+    ) {
+
+      const stockItem =
+        paintStock.find(
+          (item) =>
+            item.productCode
+              .toLowerCase() ===
+            paint.shadeCode
+              .toLowerCase()
+        );
+
+      if (!stockItem) {
+
+        alert(
+          `${paint.paintName} stock not found.`
+        );
+
+        return;
+      }
+
+      /*
+        For NEW sale check stock.
+        For edit we don't reduce stock
+        again.
+      */
+
+      if (
+        !editingId &&
+        paint.quantity >
+          stockItem.quantity
+      ) {
+
+        alert(
+          `Not enough stock for ${paint.paintName}.`
+        );
+
+        return;
+      }
     }
+
+
+    /*
+      Main old fields are kept
+      for compatibility.
+    */
+
+    const firstPaint =
+      paints[0];
+
 
     const customer: Customer = {
 
-      id: editingId ?? uuid(),
+      id:
+        editingId ??
+        uuid(),
 
-      category: "paint",
+      category:
+        "paint",
 
       customerName,
 
       contact,
 
-      productName: paintName,
+      productName:
+        firstPaint.paintName,
 
-      productCode: paintNo,
+      productCode:
+        firstPaint.shadeCode,
 
-      totalAmount: Number(totalAmount),
+      quantitySold:
+        firstPaint.quantity,
 
-      paidAmount: Number(paidAmount),
+      paints:
+
+        paints,
+
+      totalAmount,
+
+      paidAmount:
+        Number(paidAmount) || 0,
 
       dueAmount,
 
-      createdAt: new Date().toLocaleString(),
+      accessories,
+
+      createdAt:
+        new Date().toLocaleString(),
 
     };
 
+
+    /*
+      UPDATE
+    */
+
     if (editingId) {
 
-      updateCustomer(customer);
+      updateCustomer(
+        customer
+      );
+
+      alert(
+        "Customer Updated Successfully!"
+      );
 
     } else {
 
-      addCustomer(customer);
+      /*
+        SAVE
+      */
 
-      reduceStock(
-        paintName,
-        Number(quantitySold)
+      addCustomer(
+        customer
+      );
+
+
+      /*
+        Reduce stock for EVERY paint
+      */
+
+      for (
+        const paint of paints
+      ) {
+
+        reduceStock(
+          paint.paintName,
+          paint.quantity
+        );
+
+      }
+
+
+      alert(
+        "Customer Saved Successfully!"
       );
 
     }
 
+
     loadCustomers();
 
     clearForm();
-
   }
-    function removeCustomer(id: string) {
 
-    if (!confirm("Delete this customer?")) return;
+
+  /*
+    DELETE CUSTOMER
+  */
+
+  function removeCustomer(
+    id: string
+  ) {
+
+    if (
+      !confirm(
+        "Delete this customer?"
+      )
+    ) {
+
+      return;
+    }
 
     deleteCustomer(id);
 
     loadCustomers();
-
   }
 
-  function editCustomer(customer: Customer) {
 
-    setEditingId(customer.id);
+  /*
+    EDIT CUSTOMER
+  */
 
-    setCustomerName(customer.customerName);
+  function editCustomer(
+    customer: Customer
+  ) {
 
-    setContact(customer.contact);
-
-    setPaintName(customer.productName);
-
-    setPaintNo(customer.productCode);
-
-    const stockItem = paintStock.find(
-      (item) => item.productName === customer.productName
+    setEditingId(
+      customer.id
     );
 
-    if (stockItem) {
+    setCustomerName(
+      customer.customerName
+    );
 
-      setBrand(stockItem.brand);
+    setContact(
+      customer.contact
+    );
 
-      setPrice(stockItem.price.toString());
 
-      setAvailableStock(stockItem.quantity);
+    /*
+      MULTIPLE PAINT CUSTOMER
+    */
+
+    if (
+      customer.paints &&
+      customer.paints.length > 0
+    ) {
+
+      setPaints(
+        customer.paints
+      );
+
+      const firstPaint =
+        customer.paints[0];
+
+      setPaintName(
+        firstPaint.paintName
+      );
+
+      setPaintNo(
+        firstPaint.shadeCode
+      );
+
+      setBrand(
+        firstPaint.brand
+      );
+
+      setPurchasePrice(
+        firstPaint.purchasePrice.toString()
+      );
+
+      setPrice(
+        firstPaint.sellingPrice.toString()
+      );
+
+      setQuantitySold(
+        firstPaint.quantity.toString()
+      );
+
+      const stockItem =
+        paintStock.find(
+          (item) =>
+            item.productCode
+              .toLowerCase() ===
+            firstPaint.shadeCode
+              .toLowerCase()
+        );
+
+      if (stockItem) {
+
+        setAvailableStock(
+          stockItem.quantity
+        );
+
+      }
+
+    } else {
+
+      /*
+        OLD SINGLE PAINT CUSTOMER
+      */
+
+      setPaintName(
+        customer.productName
+      );
+
+      setPaintNo(
+        customer.productCode
+      );
+
+      setQuantitySold(
+        customer.quantitySold?.toString() ||
+        ""
+      );
+
+      const stockItem =
+        paintStock.find(
+          (item) =>
+            item.productName ===
+            customer.productName
+        );
+
+      if (stockItem) {
+
+        setBrand(
+          stockItem.brand
+        );
+
+        setPurchasePrice(
+          stockItem.price?.toString() ||
+          ""
+        );
+
+        setPrice(
+          stockItem.sellingPrice?.toString() ||
+          stockItem.price?.toString() ||
+          ""
+        );
+
+        setAvailableStock(
+          stockItem.quantity
+        );
+
+      }
 
     }
 
-    setTotalAmount(customer.totalAmount.toString());
 
-    setPaidAmount(customer.paidAmount.toString());
-
-  }
-
-  const filteredCustomers = customers.filter((customer) => {
-
-    const value = search.toLowerCase();
-
-    return (
-
-      customer.customerName.toLowerCase().includes(value) ||
-
-      customer.contact.includes(value) ||
-
-      customer.productName.toLowerCase().includes(value) ||
-
-      customer.productCode.toLowerCase().includes(value)
-
+    setAccessories(
+      customer.accessories ||
+      []
     );
 
-  });
+    setPaidAmount(
+      customer.paidAmount.toString()
+    );
+
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+
+  /*
+    SEARCH
+  */
+
+  const filteredCustomers =
+    customers.filter(
+      (customer) => {
+
+        const value =
+          search
+            .toLowerCase()
+            .trim();
+
+        return (
+
+          customer.customerName
+            .toLowerCase()
+            .includes(value)
+
+          ||
+
+          customer.contact
+            .includes(value)
+
+          ||
+
+          customer.productName
+            .toLowerCase()
+            .includes(value)
+
+          ||
+
+          customer.productCode
+            .toLowerCase()
+            .includes(value)
+
+          ||
+
+          customer.paints?.some(
+            (paint) =>
+              paint.paintName
+                .toLowerCase()
+                .includes(value) ||
+
+              paint.shadeCode
+                .toLowerCase()
+                .includes(value)
+          )
+
+        );
+
+      }
+    );
+
 
   return (
+
     <div className="min-h-screen bg-[#0f172a] py-10 px-4">
 
-  <div className="max-w-6xl mx-auto bg-[#1e293b] rounded-2xl shadow-2xl border border-green-700 p-8">
+      <div className="max-w-7xl mx-auto bg-[#1e293b] rounded-2xl shadow-2xl border border-green-700 p-8">
 
-    <h1 className="text-5xl font-bold text-green-400 text-center mb-10">
-      Premium Paints
-    </h1>
 
-    <div className="grid md:grid-cols-2 gap-5">
+        {/* TITLE */}
 
-      <input
-        type="text"
-        placeholder="Customer Name"
-        value={customerName}
-        onChange={(e) => setCustomerName(e.target.value)}
-        className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-      />
+        <h1 className="text-5xl font-bold text-green-400 text-center mb-10">
 
-      <input
-        type="text"
-        placeholder="Contact Number"
-        value={contact}
-        onChange={(e) => setContact(e.target.value)}
-        className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-      />
+          Premium Paints
 
-      <select
-        value={paintName}
-        onChange={(e) => {
+        </h1>
 
-          const value = e.target.value;
 
-          setPaintName(value);
+        {/* CUSTOMER DETAILS */}
 
-          const selected = paintStock.find(
-            (item) => item.productName === value
-          );
+        <div className="grid md:grid-cols-2 gap-5">
 
-          if (selected) {
 
-            setPaintNo(selected.productCode);
+          {/* CUSTOMER NAME */}
 
-            setBrand(selected.brand);
+          <input
+            type="text"
+            placeholder="Customer Name"
+            value={customerName}
+            onChange={(e) =>
+              setCustomerName(
+                e.target.value
+              )
+            }
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+          />
 
-            setPrice(selected.price.toString());
 
-            setAvailableStock(selected.quantity);
+          {/* CONTACT */}
 
-            calculateTotal(
-              quantitySold,
-              selected.price.toString()
-            );
+          <input
+            type="text"
+            placeholder="Contact Number"
+            value={contact}
+            onChange={(e) =>
+              setContact(
+                e.target.value
+              )
+            }
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+          />
 
-          }
+        </div>
 
-        }}
-        className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-      >
 
-        <option value="">
-          Select Paint
-        </option>
+        {/* PAINT SELECTION */}
 
-        {paintStock.map((item) => (
+        <div className="mt-6 rounded-xl border border-green-600 bg-slate-900 p-5">
 
-          <option
-            key={item.id}
-            value={item.productName}
-          >
-            {item.productName} ({item.quantity} Left)
-          </option>
+          <h2 className="text-xl font-bold text-green-400 mb-5">
 
-        ))}
+            Add Paint
 
-      </select>
+          </h2>
 
-      <input
-        type="text"
-        value={paintNo}
-        readOnly
-        placeholder="Shade Code"
-        className="p-4 rounded-xl bg-slate-900 border border-yellow-500 text-yellow-400"
-      />
+
+          <div className="grid md:grid-cols-2 gap-5">
+
+
+            {/* PAINT SELECT */}
+
+            <select
+              value={paintName}
+              onChange={(e) =>
+                handlePaintSelect(
+                  e.target.value
+                )
+              }
+              className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+            >
+
+              <option value="">
+                Select Paint
+              </option>
+
+              {paintStock.map(
+                (item) => (
+
+                  <option
+                    key={item.id}
+                    value={
+                      item.productName
+                    }
+                  >
+
+                    {item.productName} (
+                    {item.quantity} Left)
+
+                  </option>
+
+                )
+              )}
+
+            </select>
+
+
+            {/* SHADE CODE */}
+
             <input
-        type="text"
-        value={brand}
-        readOnly
-        placeholder="Brand"
-        className="p-4 rounded-xl bg-slate-900 border border-blue-500 text-blue-400"
-      />
+              type="text"
+              placeholder="Enter Shade Code"
+              value={paintNo}
+              onChange={(e) =>
+                handleShadeCode(
+                  e.target.value
+                )
+              }
+              className="p-4 rounded-xl bg-slate-800 border border-yellow-500 text-white"
+            />
 
-      <input
-        type="text"
-        value={price}
-        readOnly
-        placeholder="Price Per Unit"
-        className="p-4 rounded-xl bg-slate-900 border border-green-500 text-green-400"
-      />
 
-      <input
-        type="text"
-        value={`${availableStock} Available`}
-        readOnly
-        className="p-4 rounded-xl bg-slate-900 border border-purple-500 text-purple-400 font-bold"
-      />
+            {/* BRAND */}
 
-      <input
-        type="number"
-        placeholder="Quantity Sold"
-        value={quantitySold}
-        onChange={(e) => {
+            <input
+              type="text"
+              value={brand}
+              readOnly
+              placeholder="Brand"
+              className="p-4 rounded-xl bg-slate-900 border border-blue-500 text-blue-400"
+            />
 
-          const qty = e.target.value;
 
-          setQuantitySold(qty);
+            {/* ORIGINAL PRICE */}
 
-          calculateTotal(qty, price);
+            <input
+              type="text"
+              value={
+                purchasePrice
+                  ? `₹${purchasePrice}`
+                  : ""
+              }
+              readOnly
+              placeholder="Price Per Unit"
+              className="p-4 rounded-xl bg-slate-900 border border-orange-500 text-orange-400"
+            />
 
-        }}
-        className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-      />
 
-      <input
-        type="number"
-        placeholder="Total Amount"
-        value={totalAmount}
-        readOnly
-        className="p-4 rounded-xl bg-slate-900 border border-orange-500 text-orange-400 font-bold"
-      />
+            {/* SELLING PRICE */}
 
-      <input
-        type="number"
-        placeholder="Amount Paid"
-        value={paidAmount}
-        onChange={(e) => setPaidAmount(e.target.value)}
-        className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-      />
+            <input
+              type="text"
+              value={
+                price
+                  ? `₹${price}`
+                  : ""
+              }
+              readOnly
+              placeholder="Selling Price Per Unit"
+              className="p-4 rounded-xl bg-slate-900 border border-green-500 text-green-400"
+            />
 
-    </div>
+
+            {/* AVAILABLE STOCK */}
+
+            <input
+              type="text"
+              value={
+                `${availableStock} Available`
+              }
+              readOnly
+              className="p-4 rounded-xl bg-slate-900 border border-purple-500 text-purple-400 font-bold"
+            />
+
+
+            {/* QUANTITY */}
+
+            <input
+              type="number"
+              placeholder="Quantity"
+              value={quantitySold}
+              onChange={(e) =>
+                setQuantitySold(
+                  e.target.value
+                )
+              }
+              className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+            />
+
+          </div>
+
+
+          {/* ADD PAINT BUTTON */}
+
+          <button
+            type="button"
+            onClick={addPaint}
+            className="mt-5 bg-green-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-xl"
+          >
+
+            + Add Paint
+
+          </button>
+
+
+          {/* ADDED PAINTS */}
+
+          {paints.length > 0 && (
+
+            <div className="mt-6 space-y-3">
+
+              <h3 className="text-lg font-bold text-yellow-400">
+
+                Added Paints
+
+              </h3>
+
+
+              {paints.map(
+                (paint, index) => (
+
+                  <div
+                    key={`${paint.shadeCode}-${index}`}
+                    className="bg-slate-800 rounded-xl border border-slate-700 p-4"
+                  >
+
+                    <div className="grid md:grid-cols-6 gap-3 items-center">
+
+
+                      <div>
+
+                        <p className="text-white font-bold">
+
+                          {paint.paintName}
+
+                        </p>
+
+                        <p className="text-gray-400 text-sm">
+
+                          {paint.brand}
+
+                        </p>
+
+                      </div>
+
+
+                      <div className="text-yellow-400">
+
+                        Shade:
+                        <br />
+
+                        {paint.shadeCode}
+
+                      </div>
+
+
+                      <div className="text-orange-400">
+
+                        Price:
+                        <br />
+
+                        ₹{paint.purchasePrice}
+
+                      </div>
+
+
+                      <div className="text-green-400">
+
+                        Selling:
+                        <br />
+
+                        ₹{paint.sellingPrice}
+
+                      </div>
+
+
+                      <div className="text-purple-400">
+
+                        Qty:
+                        <br />
+
+                        {paint.quantity}
+
+                      </div>
+
+
+                      <div className="text-right">
+
+                        <p className="text-white font-bold mb-2">
+
+                          ₹
+                          {paint.sellingPrice *
+                            paint.quantity}
+
+                        </p>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            removePaint(
+                              index
+                            )
+                          }
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg"
+                        >
+
+                          Remove
+
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                )
+              )}
+
+
+              <div className="text-right text-green-400 font-bold text-lg">
+
+                Paints Total: ₹
+                {paintsTotal}
+
+              </div>
+
+            </div>
+
+          )}
+
+        </div>
+
+
+        {/* ACCESSORIES */}
+
+        <div className="mt-6 rounded-xl border border-cyan-500 bg-slate-900 p-5">
+
+          <h2 className="text-xl font-bold text-cyan-400 mb-4">
+
+            Accessories
+
+          </h2>
+
+
+          <div className="grid md:grid-cols-3 gap-4">
+
+
+            <input
+              type="text"
+              placeholder="Accessory Name"
+              value={accessoryName}
+              onChange={(e) =>
+                setAccessoryName(
+                  e.target.value
+                )
+              }
+              className="p-4 rounded-xl bg-slate-800 border border-cyan-500 text-white"
+            />
+
+
+            <input
+              type="number"
+              placeholder="Accessory Price"
+              value={accessoryPrice}
+              onChange={(e) =>
+                setAccessoryPrice(
+                  e.target.value
+                )
+              }
+              className="p-4 rounded-xl bg-slate-800 border border-cyan-500 text-white"
+            />
+
+
+            <button
+              type="button"
+              onClick={
+                addAccessory
+              }
+              className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl px-6 py-3"
+            >
+
+              + Add Accessory
+
+            </button>
+
+          </div>
+
+
+          {accessories.length >
+            0 && (
+
+            <div className="mt-5 space-y-2">
+
+              {accessories.map(
+                (
+                  item,
+                  index
+                ) => (
+
+                  <div
+                    key={`${item.name}-${index}`}
+                    className="flex items-center justify-between bg-slate-800 rounded-xl p-3 border border-slate-700"
+                  >
+
+                    <div>
+
+                      <span className="text-white font-semibold">
+
+                        {item.name}
+
+                      </span>
+
+                      <span className="text-cyan-400 ml-3">
+
+                        ₹{item.price}
+
+                      </span>
+
+                    </div>
+
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeAccessory(
+                          index
+                        )
+                      }
+                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg"
+                    >
+
+                      Remove
+
+                    </button>
+
+                  </div>
+
+                )
+              )}
+
+
+              <div className="text-right text-cyan-400 font-bold pt-2">
+
+                Accessories Total: ₹
+                {accessoriesTotal}
+
+              </div>
+
+            </div>
+
+          )}
+
+        </div>
+
+
+        {/* TOTAL */}
+
         <div className="mt-6">
 
-      <input
-        type="text"
-        value={`Due Amount : ₹ ${dueAmount}`}
-        readOnly
-        className="w-full p-4 rounded-xl bg-slate-900 border border-yellow-500 text-yellow-400 font-bold"
-      />
+          <input
+            type="text"
+            value={
+              `Total Amount : ₹ ${totalAmount}`
+            }
+            readOnly
+            className="w-full p-4 rounded-xl bg-slate-900 border border-orange-500 text-orange-400 font-bold"
+          />
 
-    </div>
+        </div>
 
-    {availableStock === 0 && (
 
-      <div className="mt-4 bg-red-700 text-white p-4 rounded-xl font-bold text-center">
+        {/* PAID */}
 
-        ❌ OUT OF STOCK
+        <div className="mt-5">
 
-      </div>
+          <input
+            type="number"
+            placeholder="Amount Paid"
+            value={paidAmount}
+            onChange={(e) =>
+              setPaidAmount(
+                e.target.value
+              )
+            }
+            className="w-full p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+          />
 
-    )}
+        </div>
 
-    {availableStock > 0 && availableStock <= 5 && (
 
-      <div className="mt-4 bg-yellow-500 text-black p-4 rounded-xl font-bold text-center">
+        {/* DUE */}
 
-        ⚠️ LOW STOCK ({availableStock} Left)
+        <div className="mt-6">
 
-      </div>
+          <input
+            type="text"
+            value={
+              `Due Amount : ₹ ${dueAmount}`
+            }
+            readOnly
+            className="w-full p-4 rounded-xl bg-slate-900 border border-yellow-500 text-yellow-400 font-bold"
+          />
 
-    )}
+        </div>
 
-    <div className="mt-6 flex gap-4">
 
-      <button
-        onClick={saveCustomer}
-        className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-xl"
-      >
-        {editingId ? "Update Customer" : "Save Customer"}
-      </button>
+        {/* STOCK WARNING */}
 
-      <button
-        onClick={clearForm}
-        className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl"
-      >
-        Clear
-      </button>
+        {paints.length === 0 && (
 
-    </div>
+          <div className="mt-4 bg-slate-800 text-gray-300 p-4 rounded-xl text-center">
+
+            Add paint to continue.
+
+          </div>
+
+        )}
+
+
+        {/* BUTTONS */}
+
+        <div className="mt-6 flex gap-4">
+
+          <button
+            type="button"
+            onClick={
+              saveCustomer
+            }
+            className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-xl"
+          >
+
+            {editingId
+              ? "Update Customer"
+              : "Save Customer"}
+
+          </button>
+
+
+          <button
+            type="button"
+            onClick={
+              clearForm
+            }
+            className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl"
+          >
+
+            Clear
+
+          </button>
+
+        </div>
+
+
+        {/* SEARCH */}
+
         <div className="mt-8">
 
-      <input
-        type="text"
-        placeholder="Search Customer..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full p-4 rounded-xl bg-slate-800 border border-blue-500 text-white"
-      />
+          <input
+            type="text"
+            placeholder="Search Customer..."
+            value={search}
+            onChange={(e) =>
+              setSearch(
+                e.target.value
+              )
+            }
+            className="w-full p-4 rounded-xl bg-slate-800 border border-blue-500 text-white"
+          />
+
+        </div>
+
+
+        {/* CUSTOMER TABLE */}
+
+        <CustomerTable
+          customers={
+            filteredCustomers
+          }
+          onDelete={
+            removeCustomer
+          }
+          onEdit={
+            editCustomer
+          }
+        />
+
+
+      </div>
 
     </div>
-
-    <CustomerTable
-      customers={filteredCustomers}
-      onDelete={removeCustomer}
-      onEdit={editCustomer}
-    />
-
-  </div>
-
-</div>
   );
 }

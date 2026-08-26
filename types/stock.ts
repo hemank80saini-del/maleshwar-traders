@@ -1,16 +1,19 @@
-export interface Stock {
+export type Stock = {
   id: string;
 
   category: "paint" | "timber";
 
   productName: string;
+
   productCode: string;
 
   brand: string;
 
-  quantity: number;
-
   price: number;
 
+  sellingPrice: number;
+
+  quantity: number;
+
   createdAt: string;
-}
+};

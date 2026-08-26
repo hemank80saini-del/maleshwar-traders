@@ -19,7 +19,7 @@ export default function PendingPage() {
   const [search, setSearch] =
     useState("");
 
-  useEffect(() => {
+    useEffect(() => {
 
     loadPending();
 
@@ -28,7 +28,9 @@ export default function PendingPage() {
   function loadPending() {
 
     const data = getCustomers().filter(
-      (customer) => customer.dueAmount > 0
+      (customer) =>
+        customer.dueAmount > 0 &&
+        customer.pendingHidden !== true
     );
 
     setCustomers(data);
@@ -37,10 +39,32 @@ export default function PendingPage() {
 
   function removeCustomer(id: string) {
 
-    if (!confirm("Delete this customer?"))
+    if (!confirm("Remove this customer from Pending Payments?")) {
       return;
+    }
 
-    deleteCustomer(id);
+    const allCustomers = getCustomers();
+
+    const updatedCustomers = allCustomers.map((customer) => {
+
+      if (customer.id === id) {
+
+        return {
+          ...customer,
+          pendingHidden: true,
+          pendingCleared: true,
+        };
+
+      }
+
+      return customer;
+
+    });
+
+    localStorage.setItem(
+      "maleshwar_customers",
+      JSON.stringify(updatedCustomers)
+    );
 
     loadPending();
 
