@@ -16,14 +16,10 @@ import {
   deleteStock,
 } from "@/lib/stockStorage";
 
-import PaintStockTable from "./PaintStockTable";
 
-export default function PaintStockForm() {
+export default function EnamelStockForm() {
 
   const [productName, setProductName] =
-    useState("");
-
-  const [productCode, setProductCode] =
     useState("");
 
   const [brand, setBrand] =
@@ -55,7 +51,7 @@ export default function PaintStockForm() {
 
 
   /* =====================================================
-     LOAD
+     LOAD ENAMEL STOCK
   ===================================================== */
 
   useEffect(() => {
@@ -70,7 +66,7 @@ export default function PaintStockForm() {
     const data =
       getStock().filter(
         (item) =>
-          item.category === "paint"
+          item.category === "enamel"
       );
 
     setStock(data);
@@ -78,14 +74,12 @@ export default function PaintStockForm() {
 
 
   /* =====================================================
-     CLEAR
+     CLEAR FORM
   ===================================================== */
 
   function clearForm() {
 
     setProductName("");
-
-    setProductCode("");
 
     setBrand("");
 
@@ -187,7 +181,7 @@ export default function PaintStockForm() {
     if (alreadyExists) {
 
       alert(
-        "This size already exists for this paint."
+        "This size already exists for this enamel."
       );
 
       return;
@@ -248,7 +242,7 @@ export default function PaintStockForm() {
 
 
   /* =====================================================
-     SAVE PAINT
+     SAVE ENAMEL
   ===================================================== */
 
   function saveItem() {
@@ -258,19 +252,7 @@ export default function PaintStockForm() {
     ) {
 
       alert(
-        "Please enter Paint Name."
-      );
-
-      return;
-    }
-
-
-    if (
-      productCode.trim() === ""
-    ) {
-
-      alert(
-        "Please enter Shade Code."
+        "Please enter Enamel Name."
       );
 
       return;
@@ -320,20 +302,24 @@ export default function PaintStockForm() {
         uuid(),
 
       category:
-        "paint",
+        "enamel",
 
       productName:
         productName.trim(),
 
+      /*
+        Enamel me Shade Code nahi hai.
+        Isliye productCode blank rahega.
+      */
+
       productCode:
-        productCode.trim(),
+        "",
 
       brand:
         brand.trim(),
 
       /*
-        Old fields are kept
-        for compatibility.
+        Compatibility fields
       */
 
       price:
@@ -346,7 +332,7 @@ export default function PaintStockForm() {
         totalQuantity,
 
       /*
-        New size-wise data
+        Size-wise data
       */
 
       variants,
@@ -361,7 +347,7 @@ export default function PaintStockForm() {
       updateStock(item);
 
       alert(
-        "Paint Updated Successfully!"
+        "Enamel Updated Successfully!"
       );
 
     } else {
@@ -369,7 +355,7 @@ export default function PaintStockForm() {
       addStock(item);
 
       alert(
-        "Paint Added Successfully!"
+        "Enamel Added Successfully!"
       );
     }
 
@@ -396,18 +382,10 @@ export default function PaintStockForm() {
       item.productName
     );
 
-    setProductCode(
-      item.productCode
-    );
-
     setBrand(
       item.brand
     );
 
-
-    /*
-      New stock
-    */
 
     if (
       item.variants &&
@@ -465,7 +443,7 @@ export default function PaintStockForm() {
 
     if (
       !confirm(
-        "Delete this paint?"
+        "Delete this enamel?"
       )
     ) {
 
@@ -481,16 +459,16 @@ export default function PaintStockForm() {
 
   return (
 
-    <div className="bg-[#1e293b] rounded-2xl shadow-2xl border border-green-700 p-8">
+    <div className="mt-8 bg-[#1e293b] rounded-2xl shadow-2xl border border-red-700 p-8">
 
 
       {/* =================================================
           TITLE
       ================================================= */}
 
-      <h2 className="text-4xl font-bold text-green-400 mb-8">
+      <h2 className="text-4xl font-bold text-red-400 mb-8">
 
-        Paint Stock Management
+        Enamel Stock Management
 
       </h2>
 
@@ -499,36 +477,21 @@ export default function PaintStockForm() {
           BASIC DETAILS
       ================================================= */}
 
-      <div className="grid md:grid-cols-3 gap-5">
+      <div className="grid md:grid-cols-2 gap-5">
 
 
-        {/* PAINT NAME */}
+        {/* ENAMEL NAME */}
 
         <input
           type="text"
-          placeholder="Paint Name"
+          placeholder="Enamel Name"
           value={productName}
           onChange={(e) =>
             setProductName(
               e.target.value
             )
           }
-          className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-        />
-
-
-        {/* SHADE CODE */}
-
-        <input
-          type="text"
-          placeholder="Shade Code"
-          value={productCode}
-          onChange={(e) =>
-            setProductCode(
-              e.target.value
-            )
-          }
-          className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+          className="p-4 rounded-xl bg-slate-800 border border-red-600 text-white"
         />
 
 
@@ -543,22 +506,22 @@ export default function PaintStockForm() {
               e.target.value
             )
           }
-          className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+          className="p-4 rounded-xl bg-slate-800 border border-red-600 text-white"
         />
 
       </div>
 
 
       {/* =================================================
-          SIZE SECTION
+          SIZE / PRICE / STOCK
       ================================================= */}
 
-      <div className="mt-6 bg-slate-900 rounded-xl border border-cyan-500 p-5">
+      <div className="mt-6 bg-slate-900 rounded-xl border border-orange-500 p-5">
 
 
-        <h3 className="text-xl font-bold text-cyan-400 mb-5">
+        <h3 className="text-xl font-bold text-orange-400 mb-5">
 
-          Paint Size / Price / Stock
+          Enamel Size / Price / Stock
 
         </h3>
 
@@ -664,7 +627,7 @@ export default function PaintStockForm() {
         <button
           type="button"
           onClick={addVariant}
-          className="mt-5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-8 py-3 rounded-xl"
+          className="mt-5 bg-orange-600 hover:bg-orange-500 text-white font-bold px-8 py-3 rounded-xl"
         >
 
           + Add Size
@@ -673,7 +636,7 @@ export default function PaintStockForm() {
 
 
         {/* =================================================
-            VARIANTS
+            ADDED SIZES
         ================================================= */}
 
         {variants.length > 0 && (
@@ -683,7 +646,7 @@ export default function PaintStockForm() {
 
             <h4 className="text-lg font-bold text-yellow-400">
 
-              Added Sizes
+              Added Enamel Sizes
 
             </h4>
 
@@ -773,8 +736,8 @@ export default function PaintStockForm() {
         >
 
           {editingId
-            ? "Update Paint"
-            : "Add Paint"}
+            ? "Update Enamel"
+            : "Add Enamel"}
 
         </button>
 
@@ -793,14 +756,174 @@ export default function PaintStockForm() {
 
 
       {/* =================================================
-          TABLE
+          ENAMEL TABLE
       ================================================= */}
 
-      <PaintStockTable
-        stock={stock}
-        onEdit={editItem}
-        onDelete={removeItem}
-      />
+      <div className="overflow-x-auto mt-8 rounded-xl border border-slate-700">
+
+        <table className="w-full">
+
+          <thead className="bg-red-700 text-white">
+
+            <tr>
+
+              <th className="p-3">
+                Enamel
+              </th>
+
+              <th className="p-3">
+                Brand
+              </th>
+
+              <th className="p-3">
+                Size
+              </th>
+
+              <th className="p-3">
+                Actual Price
+              </th>
+
+              <th className="p-3">
+                Selling Price
+              </th>
+
+              <th className="p-3">
+                Stock
+              </th>
+
+              <th className="p-3">
+                Action
+              </th>
+
+            </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            {stock.map(
+              (item) => {
+
+                if (
+                  item.variants &&
+                  item.variants.length > 0
+                ) {
+
+                  return item.variants.map(
+                    (variant, index) => (
+
+                      <tr
+                        key={`${item.id}-${variant.id}`}
+                        className="border-b border-slate-700 text-center text-white"
+                      >
+
+                        <td className="p-3 font-bold">
+
+                          {index === 0
+                            ? item.productName
+                            : ""}
+
+                        </td>
+
+
+                        <td className="p-3">
+
+                          {index === 0
+                            ? item.brand
+                            : ""}
+
+                        </td>
+
+
+                        <td className="p-3 text-cyan-400 font-bold">
+
+                          {variant.size}{" "}
+
+                          {variant.unit ===
+                          "liter"
+                            ? "Ltr"
+                            : "Gram"}
+
+                        </td>
+
+
+                        <td className="p-3 text-orange-400">
+
+                          ₹ {variant.price}
+
+                        </td>
+
+
+                        <td className="p-3 text-green-400">
+
+                          ₹ {variant.sellingPrice}
+
+                        </td>
+
+
+                        <td
+                          className={`p-3 font-bold ${
+                            variant.quantity <= 5
+                              ? "text-red-500"
+                              : "text-purple-400"
+                          }`}
+                        >
+
+                          {variant.quantity}
+
+                        </td>
+
+
+                        <td className="p-3">
+
+                          {index === 0 && (
+
+                            <>
+
+                              <button
+                                onClick={() =>
+                                  editItem(item)
+                                }
+                                className="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded mr-2"
+                              >
+                                Edit
+                              </button>
+
+
+                              <button
+                                onClick={() =>
+                                  removeItem(
+                                    item.id
+                                  )
+                                }
+                                className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+                              >
+                                Delete
+                              </button>
+
+                            </>
+
+                          )}
+
+                        </td>
+
+                      </tr>
+
+                    )
+                  );
+                }
+
+
+                return null;
+              }
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </div>
   );

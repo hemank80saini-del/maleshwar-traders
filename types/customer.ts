@@ -29,13 +29,18 @@ export interface Customer {
   }[];
 
   paints?: {
-    paintName: string;
-    shadeCode: string;
-    brand: string;
-    purchasePrice: number;
-    sellingPrice: number;
-    quantity: number;
-  }[];
+  paintName: string;
+  shadeCode: string;
+  brand: string;
+  purchasePrice: number;
+  sellingPrice: number;
+  quantity: number;
+  unit: "liter" | "ml" | "gm";
+
+  // NEW
+  size?: number;
+  variantId?: string;
+}[];
 
   pendingHidden?: boolean;
 
