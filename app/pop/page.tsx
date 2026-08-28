@@ -20,13 +20,22 @@ export default function PopPage() {
   const [contact, setContact] =
     useState("");
 
+  const [popName, setPopName] =
+    useState("");
+
+  const [popPrice, setPopPrice] =
+    useState("");
+
+  const [popQuantity, setPopQuantity] =
+    useState("");
+
   const [channel, setChannel] =
     useState("");
 
-  const [price, setPrice] =
+  const [channelPrice, setChannelPrice] =
     useState("");
 
-  const [quantity, setQuantity] =
+  const [channelQuantity, setChannelQuantity] =
     useState("");
 
   const [paidAmount, setPaidAmount] =
@@ -54,8 +63,12 @@ export default function PopPage() {
 
 
   const popTotal =
-    (Number(price) || 0) *
-    (Number(quantity) || 0);
+    (Number(popPrice) || 0) *
+    (Number(popQuantity) || 0);
+
+  const channelTotal =
+    (Number(channelPrice) || 0) *
+    (Number(channelQuantity) || 0);
 
 
   const accessoriesTotal =
@@ -67,7 +80,7 @@ export default function PopPage() {
 
 
   const totalAmount =
-    popTotal + accessoriesTotal;
+    popTotal + channelTotal + accessoriesTotal;
 
 
   const dueAmount =
@@ -180,9 +193,12 @@ export default function PopPage() {
 
     setCustomerName("");
     setContact("");
+    setPopName("");
+    setPopPrice("");
+    setPopQuantity("");
     setChannel("");
-    setPrice("");
-    setQuantity("");
+    setChannelPrice("");
+    setChannelQuantity("");
     setPaidAmount("");
 
     setAccessoryName("");
@@ -202,9 +218,12 @@ export default function PopPage() {
     if (
       customerName.trim() === "" ||
       contact.trim() === "" ||
+      popName.trim() === "" ||
+      popPrice.trim() === "" ||
+      popQuantity.trim() === "" ||
       channel.trim() === "" ||
-      price.trim() === "" ||
-      quantity.trim() === ""
+      channelPrice.trim() === "" ||
+      channelQuantity.trim() === ""
     ) {
 
       alert(
@@ -229,7 +248,7 @@ export default function PopPage() {
       contact,
 
       productName:
-        "POP",
+        popName,
 
       productCode:
         channel,
@@ -238,13 +257,22 @@ export default function PopPage() {
         channel,
 
       popPrice:
-        Number(price),
+        Number(popPrice),
 
       popQuantity:
-        Number(quantity),
+        Number(popQuantity),
 
       quantitySold:
-        Number(quantity),
+        Number(popQuantity),
+
+      popName:
+        popName,
+
+      channelPrice:
+        Number(channelPrice),
+
+      channelQuantity:
+        Number(channelQuantity),
 
       totalAmount,
 
@@ -313,22 +341,36 @@ export default function PopPage() {
     );
 
 
+    setPopName(
+      customer.popName ||
+      customer.productName ||
+      ""
+    );
+
+    setPopPrice(
+      customer.popPrice?.toString() ||
+      ""
+    );
+
+    setPopQuantity(
+      customer.popQuantity?.toString() ||
+      customer.quantitySold?.toString() ||
+      ""
+    );
+
     setChannel(
       customer.popChannel ||
       customer.productCode ||
       ""
     );
 
-
-    setPrice(
-      customer.popPrice?.toString() ||
+    setChannelPrice(
+      customer.channelPrice?.toString() ||
       ""
     );
 
-
-    setQuantity(
-      customer.popQuantity?.toString() ||
-      customer.quantitySold?.toString() ||
+    setChannelQuantity(
+      customer.channelQuantity?.toString() ||
       ""
     );
 
@@ -534,6 +576,53 @@ export default function PopPage() {
           />
 
 
+          {/* POP NAME */}
+
+          <input
+            type="text"
+            placeholder="POP Name"
+            value={popName}
+            onChange={(e) =>
+              setPopName(
+                e.target.value
+              )
+            }
+            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
+          />
+
+
+          {/* POP PRICE */}
+
+          <input
+            type="number"
+            placeholder="POP Price"
+            value={popPrice}
+            min="0"
+            onChange={(e) =>
+              setPopPrice(
+                e.target.value
+              )
+            }
+            className="p-4 rounded-xl bg-slate-800 border border-green-500 text-white"
+          />
+
+
+          {/* POP QUANTITY */}
+
+          <input
+            type="number"
+            placeholder="POP Quantity"
+            value={popQuantity}
+            min="0"
+            onChange={(e) =>
+              setPopQuantity(
+                e.target.value
+              )
+            }
+            className="p-4 rounded-xl bg-slate-800 border border-purple-500 text-white"
+          />
+
+
           {/* CHANNEL */}
 
           <input
@@ -549,33 +638,35 @@ export default function PopPage() {
           />
 
 
-          {/* PRICE */}
+          {/* CHANNEL PRICE */}
 
           <input
             type="number"
-            placeholder="Price"
-            value={price}
+            placeholder="Channel Price"
+            value={channelPrice}
+            min="0"
             onChange={(e) =>
-              setPrice(
+              setChannelPrice(
                 e.target.value
               )
             }
-            className="p-4 rounded-xl bg-slate-800 border border-green-500 text-white"
+            className="p-4 rounded-xl bg-slate-800 border border-blue-500 text-white"
           />
 
 
-          {/* QUANTITY */}
+          {/* CHANNEL QUANTITY */}
 
           <input
             type="number"
-            placeholder="Quantity"
-            value={quantity}
+            placeholder="Channel Quantity"
+            value={channelQuantity}
+            min="0"
             onChange={(e) =>
-              setQuantity(
+              setChannelQuantity(
                 e.target.value
               )
             }
-            className="p-4 rounded-xl bg-slate-800 border border-purple-500 text-white"
+            className="p-4 rounded-xl bg-slate-800 border border-blue-500 text-white"
           />
 
         </div>
@@ -827,15 +918,27 @@ export default function PopPage() {
                 </th>
 
                 <th className="p-3 text-left">
+                  POP Name
+                </th>
+
+                <th className="p-3 text-center">
+                  POP Price
+                </th>
+
+                <th className="p-3 text-center">
+                  POP Qty
+                </th>
+
+                <th className="p-3 text-left">
                   Channel
                 </th>
 
                 <th className="p-3 text-center">
-                  Price
+                  Channel Price
                 </th>
 
                 <th className="p-3 text-center">
-                  Qty
+                  Channel Qty
                 </th>
 
                 <th className="p-3 text-left">
@@ -871,7 +974,7 @@ export default function PopPage() {
                 <tr>
 
                   <td
-                    colSpan={10}
+                    colSpan={12}
                     className="p-6 text-center text-gray-400"
                   >
 
@@ -910,17 +1013,18 @@ export default function PopPage() {
                       </td>
 
 
-                      {/* CHANNEL */}
+                      {/* POP NAME */}
 
                       <td className="p-3">
 
-                        {customer.popChannel ||
-                          customer.productCode}
+                        {customer.popName ||
+                          customer.productName ||
+                          "POP"}
 
                       </td>
 
 
-                      {/* PRICE */}
+                      {/* POP PRICE */}
 
                       <td className="p-3 text-center">
 
@@ -929,7 +1033,7 @@ export default function PopPage() {
                       </td>
 
 
-                      {/* QUANTITY */}
+                      {/* POP QUANTITY */}
 
                       <td className="p-3 text-center">
 
@@ -937,6 +1041,31 @@ export default function PopPage() {
                           customer.quantitySold ??
                           0}
 
+                      </td>
+
+
+                      {/* CHANNEL */}
+
+                      <td className="p-3">
+
+                        {customer.popChannel ||
+                          customer.productCode ||
+                          "-"}
+
+                      </td>
+
+
+                      {/* CHANNEL PRICE */}
+
+                      <td className="p-3 text-center">
+                        ₹{customer.channelPrice ?? 0}
+                      </td>
+
+
+                      {/* CHANNEL QUANTITY */}
+
+                      <td className="p-3 text-center">
+                        {customer.channelQuantity ?? 0}
                       </td>
 
 

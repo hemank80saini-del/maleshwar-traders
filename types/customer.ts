@@ -29,18 +29,23 @@ export interface Customer {
   }[];
 
   paints?: {
-  paintName: string;
-  shadeCode: string;
-  brand: string;
-  purchasePrice: number;
-  sellingPrice: number;
-  quantity: number;
-  unit: "liter" | "ml" | "gm";
+    paintName: string;
+    shadeCode: string;
+    brand: string;
+    purchasePrice: number;
+    sellingPrice: number;
+    quantity: number;
+    unit: "liter" | "ml" | "gm";
+  }[];
 
-  // NEW
-  size?: number;
-  variantId?: string;
-}[];
+  enamels?: {
+    enamelName: string;
+    brand: string;
+    purchasePrice: number;
+    sellingPrice: number;
+    quantity: number;
+    unit: "liter" | "ml" | "gm";
+  }[];
 
   pendingHidden?: boolean;
 
@@ -51,4 +56,10 @@ export interface Customer {
   popPrice?: number;
 
   popQuantity?: number;
+
+    popName?: string;
+
+  channelPrice?: number;
+
+  channelQuantity?: number;
 }
