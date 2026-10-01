@@ -16,7 +16,7 @@ import {
   getPaintStock,
   getEnamelStock,
   reduceStockVariant,
-} from "@/lib/stockStorage";
+} from "@/lib/stockSupabase";
 
 import { Customer } from "@/types/customer";
 import { Stock } from "@/types/stock";
@@ -152,18 +152,19 @@ export default function PaintsPage() {
     totalAmount -
     (Number(paidAmount) || 0);
 
-  function loadCustomers() {
-    const customerData =
-      getCustomers().filter(
-        (item) =>
-          item.category === "paint"
-      );
+async function loadCustomers() {
+  const allCustomers = await getCustomers();
+
+  const customerData = allCustomers.filter(
+    (item) =>
+      item.category === "paint"
+  );
 
     const stockData =
-      getPaintStock();
+      await getPaintStock();
 
     const enamelData =
-      getEnamelStock();
+      await getEnamelStock();
 
     setCustomers(customerData);
     setPaintStock(stockData);
@@ -173,10 +174,8 @@ export default function PaintsPage() {
   /* eslint-disable react-hooks/set-state-in-effect */
 
   useEffect(() => {
-    loadCustomers();
-
     const refreshStock = () => {
-      loadCustomers();
+      void loadCustomers();
     };
 
     window.addEventListener(
@@ -188,6 +187,10 @@ export default function PaintsPage() {
       "visibilitychange",
       refreshStock
     );
+
+    const initialize = async () => {
+
+    await loadCustomers();
 
     const data =
       localStorage.getItem(
@@ -257,7 +260,7 @@ export default function PaintsPage() {
       );
 
       const stockItem =
-        getPaintStock().find(
+        (await getPaintStock()).find(
           (item) =>
             item.productCode
               .toLowerCase()
@@ -310,7 +313,7 @@ export default function PaintsPage() {
       );
 
       const stockItem =
-        getPaintStock().find(
+        (await getPaintStock()).find(
           (item) =>
             item.productName ===
             customer.productName
@@ -358,7 +361,7 @@ export default function PaintsPage() {
         customer.enamels[0];
 
       const currentEnamelStock =
-        getEnamelStock();
+        await getEnamelStock();
 
       const stockItem =
         currentEnamelStock.find(
@@ -437,6 +440,11 @@ export default function PaintsPage() {
       ""
     );
 
+
+    };
+
+    void initialize();
+
     return () => {
       window.removeEventListener(
         "focus",
@@ -452,18 +460,18 @@ export default function PaintsPage() {
 
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  function getFreshPaintStock() {
+  async function getFreshPaintStock() {
     const latest =
-      getPaintStock();
+      await getPaintStock();
 
     setPaintStock(latest);
 
     return latest;
   }
 
-  function getFreshEnamelStock() {
+  async function getFreshEnamelStock() {
     const latest =
-      getEnamelStock();
+      await getEnamelStock();
 
     setEnamelStock(latest);
 
@@ -528,12 +536,12 @@ export default function PaintsPage() {
       );
   }
 
-  function selectPaint(
+  async function selectPaint(
     selected: Stock,
     selectedUnit?: PaintUnit
   ) {
     const latestStock =
-      getFreshPaintStock();
+      await getFreshPaintStock();
 
     const freshSelected =
       latestStock.find(
@@ -645,7 +653,7 @@ export default function PaintsPage() {
     }
   }
 
-  function handlePaintSelect(
+  async function handlePaintSelect(
     value: string
   ) {
     setSelectedStockId(
@@ -653,7 +661,7 @@ export default function PaintsPage() {
     );
 
     const latestStock =
-      getFreshPaintStock();
+      await getFreshPaintStock();
 
     const selected =
       latestStock.find(
@@ -772,11 +780,11 @@ export default function PaintsPage() {
     }
   }
 
-  function handlePaintUnitSelect(
+  async function handlePaintUnitSelect(
     value: string
   ) {
     const latestStock =
-      getFreshPaintStock();
+      await getFreshPaintStock();
 
     const selected =
       latestStock.find(
@@ -873,13 +881,13 @@ export default function PaintsPage() {
     );
   }
 
-  function handleShadeCode(
+  async function handleShadeCode(
     code: string
   ) {
     setPaintNo(code);
 
     const latestStock =
-      getFreshPaintStock();
+      await getFreshPaintStock();
 
     const selected =
       latestStock.find(
@@ -911,7 +919,7 @@ export default function PaintsPage() {
     }
   }
 
-  function addPaint() {
+  async function addPaint() {
     if (
       !paintName ||
       !paintNo ||
@@ -935,7 +943,7 @@ export default function PaintsPage() {
     }
 
     const latestStock =
-      getFreshPaintStock();
+      await getFreshPaintStock();
 
     const stockItem =
       latestStock.find(
@@ -1081,7 +1089,7 @@ export default function PaintsPage() {
     setQuantitySold("");
   }
 
-  function removePaint(
+  async function removePaint(
     index: number
   ) {
     const removedPaint =
@@ -1102,7 +1110,7 @@ export default function PaintsPage() {
     );
 
     const latestStock =
-      getPaintStock();
+      await getPaintStock();
 
     const stockItem =
       latestStock.find(
@@ -1172,10 +1180,10 @@ export default function PaintsPage() {
      SELECT ENAMEL
   ======================================================= */
 
-  function handleEnamelSelect(value: string) {
+  async function handleEnamelSelect(value: string) {
     setSelectedEnamelStockId(value);
 
-    const latestStock = getFreshEnamelStock();
+    const latestStock = await getFreshEnamelStock();
 
     const selected = latestStock.find(
       (item) => item.id === value
@@ -1276,11 +1284,11 @@ export default function PaintsPage() {
      SELECT ENAMEL SIZE / UNIT
   ======================================================= */
 
-  function handleEnamelUnitSelect(
+  async function handleEnamelUnitSelect(
     value: string
   ) {
     const latestStock =
-      getFreshEnamelStock();
+      await getFreshEnamelStock();
 
     const selected =
       latestStock.find(
@@ -1397,7 +1405,7 @@ export default function PaintsPage() {
      ADD ENAMEL
   ======================================================= */
 
-  function addEnamel() {
+  async function addEnamel() {
     if (
       !enamelName ||
       !enamelSellingPrice ||
@@ -1420,7 +1428,7 @@ export default function PaintsPage() {
     }
 
     const latestStock =
-      getFreshEnamelStock();
+      await getFreshEnamelStock();
 
     const stockItem =
       latestStock.find(
@@ -1582,7 +1590,7 @@ export default function PaintsPage() {
      REMOVE ENAMEL
   ======================================================= */
 
-  function removeEnamel(
+  async function removeEnamel(
     index: number
   ) {
     const removed =
@@ -1616,7 +1624,7 @@ export default function PaintsPage() {
     }
 
     const latestStock =
-      getFreshEnamelStock();
+      await getFreshEnamelStock();
 
     const stockItem =
       latestStock.find(
@@ -1816,7 +1824,7 @@ export default function PaintsPage() {
      SAVE CUSTOMER
   ======================================================= */
 
-  function saveCustomer() {
+  async function saveCustomer() {
     if (
       customerName.trim() === "" ||
       contact.trim() === ""
@@ -1842,10 +1850,10 @@ export default function PaintsPage() {
       Isse latest price/quantity use hogi.
     */
     const latestPaintStock =
-      getPaintStock();
+      await getPaintStock();
 
     const latestEnamelStock =
-      getEnamelStock();
+      await getEnamelStock();
 
     setPaintStock(
       latestPaintStock
@@ -2054,7 +2062,7 @@ export default function PaintsPage() {
                     paint.unit
             );
 
-          reduceStockVariant(
+          await reduceStockVariant(
             stockItem.id,
 
             paint.variantId ||
@@ -2095,7 +2103,7 @@ export default function PaintsPage() {
                     enamel.unit
             );
 
-          reduceStockVariant(
+          await reduceStockVariant(
             stockItem.id,
 
             enamel.variantId ||
@@ -2143,7 +2151,7 @@ export default function PaintsPage() {
      EDIT CUSTOMER
   ======================================================= */
 
-  function editCustomer(
+  async function editCustomer(
     customer: Customer
   ) {
     setEditingId(
@@ -2209,7 +2217,7 @@ export default function PaintsPage() {
       );
 
       const latestStock =
-        getPaintStock();
+        await getPaintStock();
 
       const stockItem =
         latestStock.find(
@@ -2276,7 +2284,7 @@ export default function PaintsPage() {
       );
 
       const latestStock =
-        getPaintStock();
+        await getPaintStock();
 
       const stockItem =
         latestStock.find(

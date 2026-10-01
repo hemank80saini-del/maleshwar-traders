@@ -39,8 +39,8 @@ export default function TimbersPage() {
     loadCustomers();
   }, []);
 
-  function loadCustomers() {
-    const data = getCustomers().filter(
+  async function loadCustomers() {
+    const data = (await getCustomers()).filter(
       (item) => item.category === "timber"
     );
 
@@ -58,7 +58,7 @@ export default function TimbersPage() {
     setEditingId(null);
   }
 
-  function saveCustomer() {
+  async function saveCustomer() {
     if (
       customerName.trim() === "" ||
       contact.trim() === "" ||
@@ -87,24 +87,48 @@ export default function TimbersPage() {
       dueAmount,
 
       createdAt: new Date().toLocaleString(),
+
+      accessories: [],
+      paints: [],
+      enamels: [],
+
+      pendingHidden: false,
+      pendingCleared: false,
+
+      popChannel: undefined,
+      popPrice: undefined,
+      popQuantity: undefined,
+      popName: undefined,
+
+      channelPrice: undefined,
+      channelQuantity: undefined,
     };
 
-    if (editingId) {
-      updateCustomer(customer);
-    } else {
-      addCustomer(customer);
-    }
+    try {
+      if (editingId) {
+        await updateCustomer(customer);
+      } else {
+        await addCustomer(customer);
+      }
 
-    loadCustomers();
-    clearForm();
+      await loadCustomers();
+      clearForm();
+    } catch (error) {
+      console.error("Error saving timber customer:", error);
+      alert("Customer save nahi hua. Please try again.");
+    }
   }
 
-  function removeCustomer(id: string) {
+  async function removeCustomer(id: string) {
     if (!confirm("Delete this customer?")) return;
 
-    deleteCustomer(id);
-
-    loadCustomers();
+    try {
+      await deleteCustomer(id);
+      await loadCustomers();
+    } catch (error) {
+      console.error("Error deleting timber customer:", error);
+      alert("Customer delete nahi hua. Please try again.");
+    }
   }
 
   function editCustomer(customer: Customer) {
@@ -134,7 +158,7 @@ export default function TimbersPage() {
   });
 
   return (
-        <div className="min-h-screen bg-[#0f172a] py-10 px-4">
+    <div className="min-h-screen bg-[#0f172a] py-10 px-4">
       <div className="max-w-6xl mx-auto bg-[#1e293b] rounded-2xl shadow-2xl border border-green-700 p-8">
 
         <h1 className="text-5xl font-bold text-green-400 text-center mb-10">

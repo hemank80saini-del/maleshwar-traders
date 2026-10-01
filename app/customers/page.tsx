@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import CustomerTable from "@/components/tables/CustomerTable";
 
@@ -12,6 +13,7 @@ import {
 import { Customer } from "@/types/customer";
 
 export default function CustomersPage() {
+  const router = useRouter();
 
   const [customers, setCustomers] =
     useState<Customer[]>([]);
@@ -20,56 +22,79 @@ export default function CustomersPage() {
     useState("");
 
   useEffect(() => {
+    let active = true;
 
-    setCustomers(getCustomers());
+    async function loadCustomers() {
+      try {
+        const data = await getCustomers();
 
+        if (active) {
+          setCustomers(data);
+        }
+      } catch (error) {
+        console.error("Error loading customers:", error);
+
+        if (active) {
+          setCustomers([]);
+        }
+      }
+    }
+
+    loadCustomers();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  function refreshCustomers() {
-
-    setCustomers(getCustomers());
-
+  async function refreshCustomers() {
+    const data = await getCustomers();
+    setCustomers(data);
   }
 
-  function removeCustomer(id: string) {
-
+  async function removeCustomer(id: string) {
     if (!confirm("Delete this customer?")) return;
 
-    deleteCustomer(id);
+    try {
+      await deleteCustomer(id);
+      await refreshCustomers();
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+      alert("Customer delete nahi hua. Please try again.");
+    }
+  }
 
-    refreshCustomers();
+  function editCustomer(customer: Customer) {
+    localStorage.setItem(
+      "editCustomer",
+      JSON.stringify(customer)
+    );
 
+    if (customer.category === "paint") {
+      router.push("/paints");
+    } else if (customer.category === "pop") {
+      router.push("/pop");
+    } else {
+      router.push("/timbers");
+    }
   }
 
   const filteredCustomers = useMemo(() => {
+    const value = search.toLowerCase().trim();
 
-    const value = search.toLowerCase();
-
-    return customers.filter((customer) =>
-
-      customer.customerName
-        .toLowerCase()
-        .includes(value)
-
-      ||
-
-      customer.contact
-        .includes(value)
-
-      ||
-
-      customer.productName
-        .toLowerCase()
-        .includes(value)
-
-      ||
-
-      customer.productCode
-        .toLowerCase()
-        .includes(value)
-
+    return customers.filter(
+      (customer) =>
+        customer.customerName
+          .toLowerCase()
+          .includes(value) ||
+        customer.contact.includes(value) ||
+        customer.productName
+          .toLowerCase()
+          .includes(value) ||
+        customer.productCode
+          .toLowerCase()
+          .includes(value)
     );
-
   }, [customers, search]);
 
   const totalCustomers =
@@ -95,16 +120,14 @@ export default function CustomersPage() {
         sum + customer.dueAmount,
       0
     );
-      return (
 
+  return (
     <div className="min-h-screen bg-[#0f172a] p-8">
 
       <div className="max-w-7xl mx-auto bg-[#1e293b] rounded-2xl border border-green-700 shadow-xl p-8">
 
         <h1 className="text-5xl font-bold text-green-400 text-center mb-10">
-
           Customers
-
         </h1>
 
         <div className="grid md:grid-cols-4 gap-5 mb-8">
@@ -168,15 +191,15 @@ export default function CustomersPage() {
           }
           className="w-full p-4 rounded-xl bg-slate-900 border border-blue-500 text-white mb-8"
         />
-                <CustomerTable
+
+        <CustomerTable
           customers={filteredCustomers}
           onDelete={removeCustomer}
-          onEdit={() => {}}
+          onEdit={editCustomer}
         />
 
       </div>
 
     </div>
-
   );
 }
