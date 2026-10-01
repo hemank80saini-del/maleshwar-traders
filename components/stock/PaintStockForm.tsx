@@ -19,162 +19,194 @@ import {
 import PaintStockTable from "./PaintStockTable";
 
 export default function PaintStockForm() {
+  const [productName, setProductName] = useState("");
+  const [productCode, setProductCode] = useState("");
+  const [brand, setBrand] = useState("");
 
-  const [productName, setProductName] =
-    useState("");
+  const [size, setSize] = useState("");
+  const [unit, setUnit] = useState<StockUnit>("liter");
+  const [price, setPrice] = useState("");
+  const [sellingPrice, setSellingPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
 
-  const [productCode, setProductCode] =
-    useState("");
+  const [variants, setVariants] = useState<StockVariant[]>([]);
 
-  const [brand, setBrand] =
-    useState("");
-
-  const [size, setSize] =
-    useState("");
-
-  const [unit, setUnit] =
-    useState<StockUnit>("liter");
-
-  const [price, setPrice] =
-    useState("");
-
-  const [sellingPrice, setSellingPrice] =
-    useState("");
-
-  const [quantity, setQuantity] =
-    useState("");
-
-  const [variants, setVariants] =
-    useState<StockVariant[]>([]);
-
-  const [editingId, setEditingId] =
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingVariantId, setEditingVariantId] =
     useState<string | null>(null);
 
-  const [stock, setStock] =
-    useState<Stock[]>([]);
+  const [additionalQuantity, setAdditionalQuantity] = useState("");
 
-
-  /* =====================================================
-     LOAD
-  ===================================================== */
+  const [stock, setStock] = useState<Stock[]>([]);
 
   useEffect(() => {
-
     loadStock();
-
   }, []);
 
-
   function loadStock() {
-
-    const data =
-      getStock().filter(
-        (item) =>
-          item.category === "paint"
-      );
+    const data = getStock().filter(
+      (item) => item.category === "paint"
+    );
 
     setStock(data);
   }
 
-
-  /* =====================================================
-     CLEAR
-  ===================================================== */
-
   function clearForm() {
-
     setProductName("");
-
     setProductCode("");
-
     setBrand("");
 
     setSize("");
-
     setUnit("liter");
-
     setPrice("");
-
     setSellingPrice("");
-
     setQuantity("");
 
     setVariants([]);
 
     setEditingId(null);
+    setEditingVariantId(null);
+    setAdditionalQuantity("");
   }
 
-
-  /* =====================================================
-     ADD SIZE
-  ===================================================== */
-
   function addVariant() {
+    const sizeValue = Number(size);
+    const priceValue = Number(price);
+    const sellingValue = Number(sellingPrice);
+    const quantityValue = Number(quantity);
 
-    const sizeValue =
-      Number(size);
+    if (!size || sizeValue <= 0) {
+      alert("Please enter a valid size.");
+      return;
+    }
 
-    const priceValue =
-      Number(price);
+    if (price === "" || priceValue < 0) {
+      alert("Please enter actual price.");
+      return;
+    }
 
-    const sellingValue =
-      Number(sellingPrice);
+    if (sellingPrice === "" || sellingValue < 0) {
+      alert("Please enter selling price.");
+      return;
+    }
 
-    const quantityValue =
-      Number(quantity);
+    /* ==========================================
+       UPDATE INDIVIDUAL SIZE
+    ========================================== */
 
+    if (editingVariantId) {
+      const extraStock =
+        additionalQuantity === ""
+          ? 0
+          : Number(additionalQuantity);
 
-    if (
-      !size ||
-      sizeValue <= 0
-    ) {
+      if (
+        Number.isNaN(extraStock) ||
+        extraStock < 0
+      ) {
+        alert("Please enter a valid stock to add.");
+        return;
+      }
+
+      const duplicateSize = variants.some(
+        (variant) =>
+          variant.id !== editingVariantId &&
+          variant.size === sizeValue &&
+          variant.unit === unit
+      );
+
+      if (duplicateSize) {
+        alert("This size already exists for this paint.");
+        return;
+      }
+
+      const updatedVariants = variants.map(
+        (variant) =>
+          variant.id === editingVariantId
+            ? {
+                ...variant,
+                size: sizeValue,
+                unit,
+                price: priceValue,
+                sellingPrice: sellingValue,
+
+                // Existing stock + new stock
+                quantity:
+                  variant.quantity + extraStock,
+              }
+            : variant
+      );
+
+      setVariants(updatedVariants);
+
+      if (editingId) {
+        const currentItem = getStock().find(
+          (item) => item.id === editingId
+        );
+
+        if (currentItem) {
+          const totalQuantity =
+            updatedVariants.reduce(
+              (sum, item) =>
+                sum + item.quantity,
+              0
+            );
+
+          updateStock({
+            ...currentItem,
+
+            productName:
+              productName.trim(),
+
+            productCode:
+              productCode.trim(),
+
+            brand:
+              brand.trim(),
+
+            price:
+              updatedVariants[0]?.price ?? 0,
+
+            sellingPrice:
+              updatedVariants[0]?.sellingPrice ?? 0,
+
+            quantity:
+              totalQuantity,
+
+            variants:
+              updatedVariants,
+          });
+        }
+      }
 
       alert(
-        "Please enter a valid size."
+        "Paint size updated successfully!"
       );
+
+      setEditingVariantId(null);
+      setAdditionalQuantity("");
+
+      setSize("");
+      setPrice("");
+      setSellingPrice("");
+      setQuantity("");
+
+      loadStock();
 
       return;
     }
 
-
-    if (
-      price === "" ||
-      priceValue < 0
-    ) {
-
-      alert(
-        "Please enter actual price."
-      );
-
-      return;
-    }
-
-
-    if (
-      sellingPrice === "" ||
-      sellingValue < 0
-    ) {
-
-      alert(
-        "Please enter selling price."
-      );
-
-      return;
-    }
-
+    /* ==========================================
+       ADD NEW SIZE
+    ========================================== */
 
     if (
       quantity === "" ||
       quantityValue < 0
     ) {
-
-      alert(
-        "Please enter stock quantity."
-      );
-
+      alert("Please enter stock quantity.");
       return;
     }
-
 
     const alreadyExists =
       variants.some(
@@ -183,9 +215,7 @@ export default function PaintStockForm() {
           item.unit === unit
       );
 
-
     if (alreadyExists) {
-
       alert(
         "This size already exists for this paint."
       );
@@ -193,51 +223,106 @@ export default function PaintStockForm() {
       return;
     }
 
-
     const newVariant: StockVariant = {
-
       id: uuid(),
 
-      size:
-        sizeValue,
+      size: sizeValue,
 
       unit,
 
-      price:
-        priceValue,
+      price: priceValue,
 
-      sellingPrice:
-        sellingValue,
+      sellingPrice: sellingValue,
 
-      quantity:
-        quantityValue,
+      quantity: quantityValue,
     };
-
 
     setVariants([
       ...variants,
       newVariant,
     ]);
 
-
     setSize("");
-
     setPrice("");
-
     setSellingPrice("");
-
     setQuantity("");
   }
 
+  /* ==========================================
+     EDIT INDIVIDUAL SIZE
+  ========================================== */
 
-  /* =====================================================
+  function editVariant(
+    item: Stock,
+    variant: StockVariant
+  ) {
+    setEditingId(item.id);
+
+    setEditingVariantId(
+      variant.id
+    );
+
+    setProductName(
+      item.productName
+    );
+
+    setProductCode(
+      item.productCode
+    );
+
+    setBrand(
+      item.brand
+    );
+
+    setVariants(
+      item.variants ?? []
+    );
+
+    setSize(
+      String(variant.size)
+    );
+
+    setUnit(
+      variant.unit
+    );
+
+    setPrice(
+      String(variant.price)
+    );
+
+    setSellingPrice(
+      String(variant.sellingPrice)
+    );
+
+    /*
+      Existing stock is shown
+      separately and cannot be
+      accidentally overwritten.
+    */
+
+    setQuantity(
+      String(variant.quantity)
+    );
+
+    /*
+      New stock to add.
+    */
+
+    setAdditionalQuantity("");
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  /* ==========================================
      REMOVE SIZE
-  ===================================================== */
+  ========================================== */
 
   function removeVariant(
     id: string
   ) {
-
     setVariants(
       variants.filter(
         (item) =>
@@ -246,17 +331,14 @@ export default function PaintStockForm() {
     );
   }
 
-
-  /* =====================================================
-     SAVE PAINT
-  ===================================================== */
+  /* ==========================================
+     SAVE / UPDATE COMPLETE PAINT
+  ========================================== */
 
   function saveItem() {
-
     if (
       productName.trim() === ""
     ) {
-
       alert(
         "Please enter Paint Name."
       );
@@ -264,11 +346,9 @@ export default function PaintStockForm() {
       return;
     }
 
-
     if (
       productCode.trim() === ""
     ) {
-
       alert(
         "Please enter Shade Code."
       );
@@ -276,11 +356,9 @@ export default function PaintStockForm() {
       return;
     }
 
-
     if (
       brand.trim() === ""
     ) {
-
       alert(
         "Please enter Brand."
       );
@@ -288,18 +366,15 @@ export default function PaintStockForm() {
       return;
     }
 
-
     if (
       variants.length === 0
     ) {
-
       alert(
         "Please add at least one size."
       );
 
       return;
     }
-
 
     const totalQuantity =
       variants.reduce(
@@ -308,13 +383,10 @@ export default function PaintStockForm() {
         0
       );
 
-
     const firstVariant =
       variants[0];
 
-
     const item: Stock = {
-
       id:
         editingId ??
         uuid(),
@@ -331,11 +403,6 @@ export default function PaintStockForm() {
       brand:
         brand.trim(),
 
-      /*
-        Old fields are kept
-        for compatibility.
-      */
-
       price:
         firstVariant.price,
 
@@ -345,27 +412,19 @@ export default function PaintStockForm() {
       quantity:
         totalQuantity,
 
-      /*
-        New size-wise data
-      */
-
       variants,
 
       createdAt:
         new Date().toLocaleString(),
     };
 
-
     if (editingId) {
-
       updateStock(item);
 
       alert(
         "Paint Updated Successfully!"
       );
-
     } else {
-
       addStock(item);
 
       alert(
@@ -373,24 +432,27 @@ export default function PaintStockForm() {
       );
     }
 
-
     loadStock();
 
     clearForm();
   }
 
-
-  /* =====================================================
-     EDIT
-  ===================================================== */
+  /* ==========================================
+     EDIT COMPLETE PAINT
+  ========================================== */
 
   function editItem(
     item: Stock
   ) {
-
     setEditingId(
       item.id
     );
+
+    setEditingVariantId(
+      null
+    );
+
+    setAdditionalQuantity("");
 
     setProductName(
       item.productName
@@ -404,22 +466,14 @@ export default function PaintStockForm() {
       item.brand
     );
 
-
-    /*
-      New stock
-    */
-
     if (
       item.variants &&
       item.variants.length > 0
     ) {
-
       setVariants(
         item.variants
       );
-
     } else {
-
       /*
         Old stock compatibility
       */
@@ -447,62 +501,42 @@ export default function PaintStockForm() {
       ]);
     }
 
-
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
   }
 
-
-  /* =====================================================
-     DELETE
-  ===================================================== */
+  /* ==========================================
+     DELETE PAINT
+  ========================================== */
 
   function removeItem(
     id: string
   ) {
-
     if (
       !confirm(
         "Delete this paint?"
       )
     ) {
-
       return;
     }
-
 
     deleteStock(id);
 
     loadStock();
   }
 
-
   return (
-
     <div className="bg-[#1e293b] rounded-2xl shadow-2xl border border-green-700 p-8">
 
-
-      {/* =================================================
-          TITLE
-      ================================================= */}
-
       <h2 className="text-4xl font-bold text-green-400 mb-8">
-
         Paint Stock Management
-
       </h2>
 
-
-      {/* =================================================
-          BASIC DETAILS
-      ================================================= */}
+      {/* BASIC DETAILS */}
 
       <div className="grid md:grid-cols-3 gap-5">
-
-
-        {/* PAINT NAME */}
 
         <input
           type="text"
@@ -516,9 +550,6 @@ export default function PaintStockForm() {
           className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
         />
 
-
-        {/* SHADE CODE */}
-
         <input
           type="text"
           placeholder="Shade Code"
@@ -530,9 +561,6 @@ export default function PaintStockForm() {
           }
           className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
         />
-
-
-        {/* BRAND */}
 
         <input
           type="text"
@@ -548,25 +576,15 @@ export default function PaintStockForm() {
 
       </div>
 
-
-      {/* =================================================
-          SIZE SECTION
-      ================================================= */}
+      {/* SIZE SECTION */}
 
       <div className="mt-6 bg-slate-900 rounded-xl border border-cyan-500 p-5">
 
-
         <h3 className="text-xl font-bold text-cyan-400 mb-5">
-
           Paint Size / Price / Stock
-
         </h3>
 
-
         <div className="grid md:grid-cols-5 gap-4">
-
-
-          {/* SIZE */}
 
           <input
             type="number"
@@ -582,9 +600,6 @@ export default function PaintStockForm() {
             className="p-4 rounded-xl bg-slate-800 border border-cyan-500 text-white"
           />
 
-
-          {/* UNIT */}
-
           <select
             value={unit}
             onChange={(e) =>
@@ -594,7 +609,6 @@ export default function PaintStockForm() {
             }
             className="p-4 rounded-xl bg-slate-800 border border-cyan-500 text-white"
           >
-
             <option value="liter">
               Ltr
             </option>
@@ -602,11 +616,7 @@ export default function PaintStockForm() {
             <option value="gm">
               Gram
             </option>
-
           </select>
-
-
-          {/* ACTUAL PRICE */}
 
           <input
             type="number"
@@ -622,9 +632,6 @@ export default function PaintStockForm() {
             className="p-4 rounded-xl bg-slate-800 border border-orange-500 text-white"
           />
 
-
-          {/* SELLING PRICE */}
-
           <input
             type="number"
             min="0"
@@ -639,99 +646,130 @@ export default function PaintStockForm() {
             className="p-4 rounded-xl bg-slate-800 border border-green-500 text-white"
           />
 
-
-          {/* STOCK QUANTITY */}
-
           <input
             type="number"
             min="0"
             step="any"
-            placeholder="Stock Quantity"
+            placeholder={
+              editingVariantId
+                ? "Current Stock"
+                : "Stock Quantity"
+            }
             value={quantity}
             onChange={(e) =>
               setQuantity(
                 e.target.value
               )
             }
+            readOnly={
+              !!editingVariantId
+            }
             className="p-4 rounded-xl bg-slate-800 border border-purple-500 text-white"
           />
 
+          {editingVariantId && (
+            <input
+              type="number"
+              min="0"
+              step="any"
+              placeholder="Add Stock"
+              value={
+                additionalQuantity
+              }
+              onChange={(e) =>
+                setAdditionalQuantity(
+                  e.target.value
+                )
+              }
+              className="p-4 rounded-xl bg-slate-800 border border-yellow-500 text-white"
+            />
+          )}
+
         </div>
 
-
-        {/* ADD SIZE */}
+        {/* ADD / UPDATE SIZE */}
 
         <button
           type="button"
           onClick={addVariant}
           className="mt-5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-8 py-3 rounded-xl"
         >
-
-          + Add Size
-
+          {editingVariantId
+            ? "Update This Size"
+            : "+ Add Size"}
         </button>
 
-
-        {/* =================================================
-            VARIANTS
-        ================================================= */}
+        {/* ADDED SIZES */}
 
         {variants.length > 0 && (
-
           <div className="mt-6 space-y-3">
 
-
             <h4 className="text-lg font-bold text-yellow-400">
-
               Added Sizes
-
             </h4>
-
 
             {variants.map(
               (variant) => (
-
                 <div
-                  key={variant.id}
+                  key={
+                    variant.id
+                  }
                   className="flex flex-wrap items-center justify-between gap-4 bg-slate-800 border border-slate-700 rounded-xl p-4"
                 >
 
-
                   <span className="text-cyan-400 font-bold">
-
                     {variant.size}{" "}
-
                     {variant.unit ===
                     "liter"
                       ? "Ltr"
                       : "Gram"}
-
                   </span>
-
 
                   <span className="text-orange-400">
-
                     Actual ₹
                     {variant.price}
-
                   </span>
-
 
                   <span className="text-green-400">
-
                     Selling ₹
                     {variant.sellingPrice}
-
                   </span>
-
 
                   <span className="text-purple-400">
-
                     Stock{" "}
                     {variant.quantity}
-
                   </span>
 
+                  <button
+                    type="button"
+                    onClick={() =>
+                      editVariant(
+                        {
+                          id:
+                            editingId ??
+                            "",
+                          category:
+                            "paint",
+                          productName,
+                          productCode,
+                          brand,
+                          price:
+                            variant.price,
+                          sellingPrice:
+                            variant.sellingPrice,
+                          quantity:
+                            variant.quantity,
+                          variants,
+                          createdAt:
+                            new Date().toLocaleString(),
+                        },
+                        variant
+                      )
+                    }
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+                  >
+                    Edit
+                  </button>
 
                   <button
                     type="button"
@@ -742,63 +780,46 @@ export default function PaintStockForm() {
                     }
                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
                   >
-
                     Remove
-
                   </button>
 
                 </div>
-
               )
             )}
 
           </div>
-
         )}
 
       </div>
 
-
-      {/* =================================================
-          BUTTONS
-      ================================================= */}
+      {/* MAIN BUTTONS */}
 
       <div className="flex gap-4 mt-6">
-
 
         <button
           type="button"
           onClick={saveItem}
           className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-xl"
         >
-
           {editingId
             ? "Update Paint"
             : "Add Paint"}
-
         </button>
-
 
         <button
           type="button"
           onClick={clearForm}
           className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl"
         >
-
           Clear
-
         </button>
 
       </div>
 
-
-      {/* =================================================
-          TABLE
-      ================================================= */}
-
       <PaintStockTable
         stock={stock}
         onEdit={editItem}
+        onEditVariant={editVariant}
         onDelete={removeItem}
       />
 

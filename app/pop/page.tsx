@@ -215,19 +215,45 @@ export default function PopPage() {
 
   function savePopSale() {
 
+    // POP and Channel are independent products.
+    // Customer can buy either one or both, but not neither.
+    const hasPop = popName.trim() !== "";
+    const hasChannel = channel.trim() !== "";
+
     if (
       customerName.trim() === "" ||
-      contact.trim() === "" ||
-      popName.trim() === "" ||
-      popPrice.trim() === "" ||
-      popQuantity.trim() === "" ||
-      channel.trim() === "" ||
-      channelPrice.trim() === "" ||
-      channelQuantity.trim() === ""
+      contact.trim() === ""
     ) {
 
       alert(
-        "Please fill all required fields."
+        "Please enter customer name and contact number."
+      );
+
+      return;
+    }
+
+    if (!hasPop && !hasChannel) {
+
+      alert(
+        "Please enter POP details or Channel details."
+      );
+
+      return;
+    }
+
+    if (hasPop && (popPrice.trim() === "" || popQuantity.trim() === "")) {
+
+      alert(
+        "Please enter POP price and quantity."
+      );
+
+      return;
+    }
+
+    if (hasChannel && (channelPrice.trim() === "" || channelQuantity.trim() === "")) {
+
+      alert(
+        "Please enter Channel price and quantity."
       );
 
       return;

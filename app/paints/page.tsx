@@ -21,11 +21,6 @@ import {
 import { Customer } from "@/types/customer";
 import { Stock } from "@/types/stock";
 
-
-/* =========================================================
-   TYPES
-========================================================= */
-
 type PaintUnit = "liter" | "ml" | "gm";
 
 type SalePaint = {
@@ -49,89 +44,35 @@ type SaleEnamel = {
   variantId?: string;
 };
 
-
-/* =========================================================
-   PAGE
-========================================================= */
-
 export default function PaintsPage() {
+  const [customerName, setCustomerName] = useState("");
+  const [contact, setContact] = useState("");
 
-  /* =======================================================
-     CUSTOMER
-  ======================================================= */
+  const [paintName, setPaintName] = useState("");
+  const [paintNo, setPaintNo] = useState("");
+  const [brand, setBrand] = useState("");
+  const [purchasePrice, setPurchasePrice] = useState("");
+  const [price, setPrice] = useState("");
+  const [availableStock, setAvailableStock] = useState(0);
+  const [quantitySold, setQuantitySold] = useState("");
 
-  const [customerName, setCustomerName] =
-    useState("");
-
-  const [contact, setContact] =
-    useState("");
-
-
-  /* =======================================================
-     CURRENT PAINT
-  ======================================================= */
-
-  const [paintName, setPaintName] =
-    useState("");
-
-  const [paintNo, setPaintNo] =
-    useState("");
-
-  const [brand, setBrand] =
-    useState("");
-
-  const [purchasePrice, setPurchasePrice] =
-    useState("");
-
-  const [price, setPrice] =
-    useState("");
-
-  const [availableStock, setAvailableStock] =
-    useState(0);
-
-  const [quantitySold, setQuantitySold] =
-    useState("");
-
-  /* NEW UNIT */
   const [paintUnit, setPaintUnit] =
     useState<PaintUnit>("liter");
 
-    const [paintSize, setPaintSize] =
-  useState(1);
+  const [paintSize, setPaintSize] = useState(1);
+  const [paintVariantId, setPaintVariantId] = useState("");
 
-const [paintVariantId, setPaintVariantId] =
-  useState("");
+  const [paints, setPaints] = useState<SalePaint[]>([]);
 
-
-  /* =======================================================
-     MULTIPLE PAINTS
-  ======================================================= */
-
-  const [paints, setPaints] =
-    useState<SalePaint[]>([]);
-
-
-  /* =======================================================
-     ENAMELS
-  ======================================================= */
-
-  const [enamelName, setEnamelName] =
-    useState("");
-
-  const [enamelBrand, setEnamelBrand] =
-    useState("");
-
+  const [enamelName, setEnamelName] = useState("");
+  const [enamelBrand, setEnamelBrand] = useState("");
   const [enamelPurchasePrice, setEnamelPurchasePrice] =
     useState("");
-
   const [enamelSellingPrice, setEnamelSellingPrice] =
     useState("");
-
   const [enamelAvailableStock, setEnamelAvailableStock] =
     useState(0);
-
-  const [enamelQuantity, setEnamelQuantity] =
-    useState("");
+  const [enamelQuantity, setEnamelQuantity] = useState("");
 
   const [enamelUnit, setEnamelUnit] =
     useState<PaintUnit>("liter");
@@ -145,11 +86,6 @@ const [paintVariantId, setPaintVariantId] =
   const [enamels, setEnamels] =
     useState<SaleEnamel[]>([]);
 
-
-  /* =======================================================
-     ACCESSORIES
-  ======================================================= */
-
   const [accessoryName, setAccessoryName] =
     useState("");
 
@@ -161,51 +97,26 @@ const [paintVariantId, setPaintVariantId] =
       { name: string; price: number }[]
     >([]);
 
-
-  /* =======================================================
-     PAYMENT
-  ======================================================= */
-
   const [paidAmount, setPaidAmount] =
     useState("");
 
+  const [customers, setCustomers] =
+    useState<Customer[]>([]);
 
-  /* =======================================================
-     CUSTOMERS + STOCK
-  ======================================================= */
+  const [paintStock, setPaintStock] =
+    useState<Stock[]>([]);
 
- const [customers, setCustomers] =
-  useState<Customer[]>([]);
+  const [enamelStock, setEnamelStock] =
+    useState<Stock[]>([]);
 
-const [paintStock, setPaintStock] =
-  useState<Stock[]>([]);
-
-const [enamelStock, setEnamelStock] =
-  useState<Stock[]>([]);
-
-const [selectedStockId, setSelectedStockId] =
-  useState("");
-
-
-  /* =======================================================
-     SEARCH
-  ======================================================= */
+  const [selectedStockId, setSelectedStockId] =
+    useState("");
 
   const [search, setSearch] =
     useState("");
 
-
-  /* =======================================================
-     EDITING
-  ======================================================= */
-
   const [editingId, setEditingId] =
     useState<string | null>(null);
-
-
-  /* =======================================================
-     PAINT TOTAL
-  ======================================================= */
 
   const paintsTotal =
     paints.reduce(
@@ -216,11 +127,6 @@ const [selectedStockId, setSelectedStockId] =
       0
     );
 
-
-  /* =======================================================
-     ACCESSORIES TOTAL
-  ======================================================= */
-
   const accessoriesTotal =
     accessories.reduce(
       (sum, item) =>
@@ -228,67 +134,60 @@ const [selectedStockId, setSelectedStockId] =
       0
     );
 
-
   const enamelsTotal =
     enamels.reduce(
       (sum, enamel) =>
-        sum + enamel.sellingPrice * enamel.quantity,
+        sum +
+        enamel.sellingPrice *
+          enamel.quantity,
       0
     );
-
-
-  /* =======================================================
-     FINAL TOTAL
-  ======================================================= */
 
   const totalAmount =
     paintsTotal +
     enamelsTotal +
     accessoriesTotal;
 
-
-  /* =======================================================
-     DUE
-  ======================================================= */
-
   const dueAmount =
     totalAmount -
     (Number(paidAmount) || 0);
 
+  function loadCustomers() {
+    const customerData =
+      getCustomers().filter(
+        (item) =>
+          item.category === "paint"
+      );
 
-  /* =======================================================
-     LOAD CUSTOMERS + STOCK
-  ======================================================= */
-function loadCustomers() {
+    const stockData =
+      getPaintStock();
 
-  const customerData =
-    getCustomers().filter(
-      (item) =>
-        item.category === "paint"
-    );
+    const enamelData =
+      getEnamelStock();
 
-  const stockData =
-    getPaintStock();
-
-  const enamelData =
-    getEnamelStock();
-
-  setCustomers(customerData);
-
-  setPaintStock(stockData);
-
-  setEnamelStock(enamelData);
-}
-
-  /* =======================================================
-     PAGE LOAD
-  ======================================================= */
+    setCustomers(customerData);
+    setPaintStock(stockData);
+    setEnamelStock(enamelData);
+  }
 
   /* eslint-disable react-hooks/set-state-in-effect */
 
   useEffect(() => {
-
     loadCustomers();
+
+    const refreshStock = () => {
+      loadCustomers();
+    };
+
+    window.addEventListener(
+      "focus",
+      refreshStock
+    );
+
+    document.addEventListener(
+      "visibilitychange",
+      refreshStock
+    );
 
     const data =
       localStorage.getItem(
@@ -312,22 +211,14 @@ function loadCustomers() {
       customer.contact
     );
 
-
-    /* =====================================================
-       MULTIPLE PAINT DATA
-    ===================================================== */
-
     if (
       customer.paints &&
       customer.paints.length > 0
     ) {
-
       const loadedPaints =
         customer.paints.map(
           (paint) => ({
             ...paint,
-
-            // Old customers ke liye default Liter
             unit:
               paint.unit ||
               "liter",
@@ -337,9 +228,6 @@ function loadCustomers() {
       setPaints(
         loadedPaints
       );
-
-
-      /* FIRST PAINT */
 
       const firstPaint =
         loadedPaints[0];
@@ -368,9 +256,6 @@ function loadCustomers() {
         firstPaint.unit
       );
 
-
-      /* FIND STOCK */
-
       const stockItem =
         getPaintStock().find(
           (item) =>
@@ -382,26 +267,40 @@ function loadCustomers() {
               .trim()
         );
 
-
       if (stockItem) {
+        const variant =
+          stockItem.variants?.find(
+            (item) =>
+              (firstPaint as SalePaint).variantId
+                ? item.id ===
+                  (firstPaint as SalePaint).variantId
+                : item.unit ===
+                  firstPaint.unit
+          );
 
-        setAvailableStock(
-          stockItem.quantity
-        );
+        if (variant) {
+          setPaintVariantId(
+            variant.id
+          );
 
+          setPaintSize(
+            variant.size
+          );
+
+          setAvailableStock(
+            variant.quantity
+          );
+        } else {
+          setAvailableStock(
+            stockItem.quantity
+          );
+        }
       }
-
 
       setQuantitySold(
         firstPaint.quantity.toString()
       );
-
     } else {
-
-      /* ==================================================
-         OLD CUSTOMER DATA SUPPORT
-      ================================================== */
-
       setPaintName(
         customer.productName
       );
@@ -410,7 +309,6 @@ function loadCustomers() {
         customer.productCode
       );
 
-
       const stockItem =
         getPaintStock().find(
           (item) =>
@@ -418,9 +316,7 @@ function loadCustomers() {
             customer.productName
         );
 
-
       if (stockItem) {
-
         setBrand(
           stockItem.brand
         );
@@ -439,9 +335,7 @@ function loadCustomers() {
         setAvailableStock(
           stockItem.quantity
         );
-
       }
-
 
       setQuantitySold(
         customer.quantitySold?.toString() ||
@@ -451,37 +345,84 @@ function loadCustomers() {
       setPaintUnit("liter");
     }
 
-
     setEnamels(
       customer.enamels ||
       []
     );
 
-    if (customer.enamels && customer.enamels.length > 0) {
-      const firstEnamel = customer.enamels[0];
-      const stockItem = enamelStock.find(
-        (item) =>
-          item.productName.toLowerCase().trim() ===
-          firstEnamel.enamelName.toLowerCase().trim()
+    if (
+      customer.enamels &&
+      customer.enamels.length > 0
+    ) {
+      const firstEnamel =
+        customer.enamels[0];
+
+      const currentEnamelStock =
+        getEnamelStock();
+
+      const stockItem =
+        currentEnamelStock.find(
+          (item) =>
+            item.productName
+              .toLowerCase()
+              .trim() ===
+            firstEnamel.enamelName
+              .toLowerCase()
+              .trim()
+        );
+
+      setEnamelName(
+        firstEnamel.enamelName
       );
 
-      setEnamelName(firstEnamel.enamelName);
-      setEnamelBrand(firstEnamel.brand);
-      setEnamelPurchasePrice(firstEnamel.purchasePrice.toString());
-      setEnamelSellingPrice(firstEnamel.sellingPrice.toString());
-      setEnamelQuantity(firstEnamel.quantity.toString());
-      setEnamelUnit(firstEnamel.unit || "liter");
+      setEnamelBrand(
+        firstEnamel.brand
+      );
+
+      setEnamelPurchasePrice(
+        firstEnamel.purchasePrice.toString()
+      );
+
+      setEnamelSellingPrice(
+        firstEnamel.sellingPrice.toString()
+      );
+
+      setEnamelQuantity(
+        firstEnamel.quantity.toString()
+      );
+
+      setEnamelUnit(
+        firstEnamel.unit ||
+        "liter"
+      );
 
       if (stockItem) {
-        setSelectedEnamelStockId(stockItem.id);
-        const variant = stockItem.variants?.find(
-          (item) => item.unit === firstEnamel.unit
+        setSelectedEnamelStockId(
+          stockItem.id
         );
+
+        const variant =
+          stockItem.variants?.find(
+            (item) =>
+              (firstEnamel as SaleEnamel).variantId
+                ? item.id ===
+                  (firstEnamel as SaleEnamel).variantId
+                : item.unit ===
+                  firstEnamel.unit
+          );
+
         if (variant) {
-          setEnamelVariantId(variant.id);
-          setEnamelAvailableStock(variant.quantity);
+          setEnamelVariantId(
+            variant.id
+          );
+
+          setEnamelAvailableStock(
+            variant.quantity
+          );
         } else {
-          setEnamelAvailableStock(stockItem.quantity);
+          setEnamelAvailableStock(
+            stockItem.quantity
+          );
         }
       }
     }
@@ -491,63 +432,234 @@ function loadCustomers() {
       []
     );
 
-
     setPaidAmount(
-      customer.paidAmount.toString()
+      customer.paidAmount?.toString() ||
+      ""
     );
 
+    return () => {
+      window.removeEventListener(
+        "focus",
+        refreshStock
+      );
 
-    localStorage.removeItem(
-      "editCustomer"
-    );
-
+      document.removeEventListener(
+        "visibilitychange",
+        refreshStock
+      );
+    };
   }, []);
 
   /* eslint-enable react-hooks/set-state-in-effect */
 
+  function getFreshPaintStock() {
+    const latest =
+      getPaintStock();
 
-  /* =======================================================
-     SELECT PAINT
-  ======================================================= */
+    setPaintStock(latest);
 
-  function selectPaint(selected: Stock, selectedUnit?: PaintUnit) {
+    return latest;
+  }
 
-    setPaintName(selected.productName);
-    setPaintNo(selected.productCode);
-    setBrand(selected.brand);
+  function getFreshEnamelStock() {
+    const latest =
+      getEnamelStock();
 
-    const variants = selected.variants || [];
-    const variant = selectedUnit
-      ? variants.find((item) => item.unit === selectedUnit)
-      : variants[0];
+    setEnamelStock(latest);
+
+    return latest;
+  }
+
+  function getReservedPaintQuantity(
+    variantId: string,
+    shadeCode: string,
+    unit: PaintUnit
+  ) {
+    return paints
+      .filter(
+        (paint) =>
+          paint.shadeCode
+            .toLowerCase()
+            .trim() ===
+            shadeCode
+              .toLowerCase()
+              .trim() &&
+          paint.unit === unit &&
+          (
+            paint.variantId
+              ? paint.variantId ===
+                variantId
+              : true
+          )
+      )
+      .reduce(
+        (sum, paint) =>
+          sum + paint.quantity,
+        0
+      );
+  }
+
+  function getReservedEnamelQuantity(
+    variantId: string,
+    enamelNameValue: string,
+    unit: PaintUnit
+  ) {
+    return enamels
+      .filter(
+        (enamel) =>
+          enamel.enamelName
+            .toLowerCase()
+            .trim() ===
+            enamelNameValue
+              .toLowerCase()
+              .trim() &&
+          enamel.unit === unit &&
+          (
+            enamel.variantId
+              ? enamel.variantId ===
+                variantId
+              : true
+          )
+      )
+      .reduce(
+        (sum, enamel) =>
+          sum + enamel.quantity,
+        0
+      );
+  }
+
+  function selectPaint(
+    selected: Stock,
+    selectedUnit?: PaintUnit
+  ) {
+    const latestStock =
+      getFreshPaintStock();
+
+    const freshSelected =
+      latestStock.find(
+        (item) =>
+          item.id ===
+          selected.id
+      ) || selected;
+
+    setPaintName(
+      freshSelected.productName
+    );
+
+    setPaintNo(
+      freshSelected.productCode
+    );
+
+    setBrand(
+      freshSelected.brand
+    );
+
+    const variants =
+      freshSelected.variants ||
+      [];
+
+    const variant =
+      selectedUnit
+        ? variants.find(
+            (item) =>
+              item.unit ===
+              selectedUnit
+          )
+        : variants[0];
 
     if (variant) {
-      setPaintVariantId(variant.id);
-      setPaintSize(variant.size);
-      setPaintUnit(variant.unit as PaintUnit);
-      setPurchasePrice(variant.price?.toString() || "");
-      setPrice(variant.sellingPrice?.toString() || "");
-      setAvailableStock(variant.quantity);
+      const reserved =
+        getReservedPaintQuantity(
+          variant.id,
+          freshSelected.productCode,
+          variant.unit as PaintUnit
+        );
+
+      setPaintVariantId(
+        variant.id
+      );
+
+      setPaintSize(
+        variant.size
+      );
+
+      setPaintUnit(
+        variant.unit as PaintUnit
+      );
+
+      setPurchasePrice(
+        variant.price?.toString() ||
+        ""
+      );
+
+      setPrice(
+        variant.sellingPrice?.toString() ||
+        ""
+      );
+
+      setAvailableStock(
+        Math.max(
+          0,
+          variant.quantity -
+            reserved
+        )
+      );
     } else {
-      setPaintUnit("liter");
-      setPurchasePrice(selected.price?.toString() || "");
-      setPrice(selected.sellingPrice?.toString() || selected.price?.toString() || "");
-      setAvailableStock(selected.quantity);
+      const reserved =
+        getReservedPaintQuantity(
+          `${freshSelected.id}-old`,
+          freshSelected.productCode,
+          "liter"
+        );
+
+      setPaintVariantId(
+        ""
+      );
+
+      setPaintUnit(
+        "liter"
+      );
+
+      setPaintSize(
+        1
+      );
+
+      setPurchasePrice(
+        freshSelected.price?.toString() ||
+        ""
+      );
+
+      setPrice(
+        freshSelected.sellingPrice?.toString() ||
+        freshSelected.price?.toString() ||
+        ""
+      );
+
+      setAvailableStock(
+        Math.max(
+          0,
+          freshSelected.quantity -
+            reserved
+        )
+      );
     }
   }
 
-
-  /* =======================================================
-     SELECT PAINT FROM DROPDOWN
-  ======================================================= */
-
-  function handlePaintSelect(value: string) {
-
-    setSelectedStockId(value);
-
-    const selected = paintStock.find(
-      (item) => item.id === value
+  function handlePaintSelect(
+    value: string
+  ) {
+    setSelectedStockId(
+      value
     );
+
+    const latestStock =
+      getFreshPaintStock();
+
+    const selected =
+      latestStock.find(
+        (item) =>
+          item.id === value
+      );
 
     if (!selected) {
       setPaintName("");
@@ -561,92 +673,233 @@ function loadCustomers() {
       return;
     }
 
-    setPaintName(selected.productName);
-    setPaintNo(selected.productCode);
-    setBrand(selected.brand);
+    setPaintName(
+      selected.productName
+    );
 
-    const variants = selected.variants || [];
+    setPaintNo(
+      selected.productCode
+    );
 
-    if (variants.length > 0) {
-      const variant = variants[0];
+    setBrand(
+      selected.brand
+    );
 
-      setPaintVariantId(variant.id);
-      setPaintUnit(variant.unit as PaintUnit);
-      setPaintSize(variant.size);
-      setPurchasePrice(variant.price?.toString() || "");
-      setPrice(variant.sellingPrice?.toString() || "");
-      setAvailableStock(variant.quantity);
+    const variants =
+      selected.variants ||
+      [];
+
+    if (
+      variants.length > 0
+    ) {
+      const variant =
+        variants[0];
+
+      const reserved =
+        getReservedPaintQuantity(
+          variant.id,
+          selected.productCode,
+          variant.unit as PaintUnit
+        );
+
+      setPaintVariantId(
+        variant.id
+      );
+
+      setPaintUnit(
+        variant.unit as PaintUnit
+      );
+
+      setPaintSize(
+        variant.size
+      );
+
+      setPurchasePrice(
+        variant.price?.toString() ||
+        ""
+      );
+
+      setPrice(
+        variant.sellingPrice?.toString() ||
+        ""
+      );
+
+      setAvailableStock(
+        Math.max(
+          0,
+          variant.quantity -
+            reserved
+        )
+      );
     } else {
-      setPaintVariantId("");
-      setPaintUnit("liter");
-      setPaintSize(1);
-      setPurchasePrice(selected.price?.toString() || "");
+      const reserved =
+        getReservedPaintQuantity(
+          `${selected.id}-old`,
+          selected.productCode,
+          "liter"
+        );
+
+      setPaintVariantId(
+        ""
+      );
+
+      setPaintUnit(
+        "liter"
+      );
+
+      setPaintSize(
+        1
+      );
+
+      setPurchasePrice(
+        selected.price?.toString() ||
+        ""
+      );
+
       setPrice(
         selected.sellingPrice?.toString() ||
         selected.price?.toString() ||
         ""
       );
-      setAvailableStock(selected.quantity);
+
+      setAvailableStock(
+        Math.max(
+          0,
+          selected.quantity -
+            reserved
+        )
+      );
     }
   }
 
+  function handlePaintUnitSelect(
+    value: string
+  ) {
+    const latestStock =
+      getFreshPaintStock();
 
-  /* =======================================================
-     SELECT PAINT SIZE / UNIT
-  ======================================================= */
-
-  function handlePaintUnitSelect(value: string) {
-
-    const selected = paintStock.find(
-      (item) => item.id === selectedStockId
-    );
+    const selected =
+      latestStock.find(
+        (item) =>
+          item.id ===
+          selectedStockId
+      );
 
     if (!selected) return;
 
-    const variant = selected.variants?.find(
-      (item) => item.id === value
-    );
+    const variant =
+      selected.variants?.find(
+        (item) =>
+          item.id === value
+      );
 
     if (variant) {
-      setPaintVariantId(variant.id);
-      setPaintUnit(variant.unit as PaintUnit);
-      setPaintSize(variant.size);
-      setPurchasePrice(variant.price?.toString() || "");
-      setPrice(variant.sellingPrice?.toString() || "");
-      setAvailableStock(variant.quantity);
+      const reserved =
+        getReservedPaintQuantity(
+          variant.id,
+          selected.productCode,
+          variant.unit as PaintUnit
+        );
+
+      setPaintVariantId(
+        variant.id
+      );
+
+      setPaintUnit(
+        variant.unit as PaintUnit
+      );
+
+      setPaintSize(
+        variant.size
+      );
+
+      setPurchasePrice(
+        variant.price?.toString() ||
+        ""
+      );
+
+      setPrice(
+        variant.sellingPrice?.toString() ||
+        ""
+      );
+
+      setAvailableStock(
+        Math.max(
+          0,
+          variant.quantity -
+            reserved
+        )
+      );
+
       return;
     }
 
-    setPaintVariantId("");
-    setPaintUnit(value as PaintUnit);
-    setPaintSize(1);
-    setPurchasePrice(selected.price?.toString() || "");
+    const reserved =
+      getReservedPaintQuantity(
+        `${selected.id}-old`,
+        selected.productCode,
+        value as PaintUnit
+      );
+
+    setPaintVariantId(
+      ""
+    );
+
+    setPaintUnit(
+      value as PaintUnit
+    );
+
+    setPaintSize(
+      1
+    );
+
+    setPurchasePrice(
+      selected.price?.toString() ||
+      ""
+    );
+
     setPrice(
       selected.sellingPrice?.toString() ||
       selected.price?.toString() ||
       ""
     );
-    setAvailableStock(selected.quantity);
+
+    setAvailableStock(
+      Math.max(
+        0,
+        selected.quantity -
+          reserved
+      )
+    );
   }
 
-
-  /* =======================================================
-     SHADE CODE SEARCH
-  ======================================================= */
-
-  function handleShadeCode(code: string) {
-
+  function handleShadeCode(
+    code: string
+  ) {
     setPaintNo(code);
 
-    const selected = paintStock.find(
-      (item) =>
-        item.productCode.toLowerCase().trim() ===
-        code.toLowerCase().trim()
-    );
+    const latestStock =
+      getFreshPaintStock();
+
+    const selected =
+      latestStock.find(
+        (item) =>
+          item.productCode
+            .toLowerCase()
+            .trim() ===
+          code
+            .toLowerCase()
+            .trim()
+      );
 
     if (selected) {
-      setSelectedStockId(selected.id);
-      selectPaint(selected);
+      setSelectedStockId(
+        selected.id
+      );
+
+      selectPaint(
+        selected
+      );
     } else {
       setSelectedStockId("");
       setPaintName("");
@@ -658,47 +911,92 @@ function loadCustomers() {
     }
   }
 
-
-  /* =======================================================
-     ADD PAINT
-  ======================================================= */
-
   function addPaint() {
-
     if (
       !paintName ||
       !paintNo ||
       !price ||
       !quantitySold
     ) {
-
       alert(
         "Please select a paint, shade code and quantity."
       );
-
       return;
     }
-
 
     const quantity =
       Number(quantitySold);
 
-
-    if (
-      quantity <= 0
-    ) {
-
+    if (quantity <= 0) {
       alert(
         "Please enter a valid quantity."
       );
-
       return;
     }
 
+    const latestStock =
+      getFreshPaintStock();
 
-    /* =====================================================
-       CHECK SAME PAINT + SAME UNIT
-    ===================================================== */
+    const stockItem =
+      latestStock.find(
+        (item) =>
+          item.productCode
+            .toLowerCase()
+            .trim() ===
+          paintNo
+            .toLowerCase()
+            .trim()
+      );
+
+    if (!stockItem) {
+      alert(
+        "Paint stock not found."
+      );
+      return;
+    }
+
+    const variant =
+      stockItem.variants?.find(
+        (item) =>
+          paintVariantId
+            ? item.id ===
+              paintVariantId
+            : item.unit ===
+              paintUnit
+      );
+
+    const stockQuantity =
+      variant
+        ? variant.quantity
+        : stockItem.quantity;
+
+    const variantKey =
+      variant?.id ||
+      `${stockItem.id}-old`;
+
+    const alreadyReserved =
+      getReservedPaintQuantity(
+        variantKey,
+        stockItem.productCode,
+        paintUnit
+      );
+
+    const availableForThisSale =
+      Math.max(
+        0,
+        stockQuantity -
+          alreadyReserved
+      );
+
+    if (
+      quantity >
+      availableForThisSale
+    ) {
+      alert(
+        `Not enough ${paintUnit} stock available. Available: ${availableForThisSale}`
+      );
+      return;
+    }
 
     const existingIndex =
       paints.findIndex(
@@ -708,193 +1006,178 @@ function loadCustomers() {
             .trim() ===
             paintNo
               .toLowerCase()
-              .trim()
-          &&
+              .trim() &&
           paint.unit ===
-            paintUnit
+            paintUnit &&
+          (
+            paintVariantId
+              ? paint.variantId ===
+                paintVariantId
+              : !paint.variantId
+          )
       );
 
+    let updatedPaints:
+      SalePaint[];
 
     if (
-      existingIndex !== -1
+      existingIndex !==
+      -1
     ) {
-
-      const updatedPaints =
+      updatedPaints =
         [...paints];
-
-      const existingPaint =
-        updatedPaints[
-          existingIndex
-        ];
-
-
-      const newQuantity =
-        existingPaint.quantity +
-        quantity;
-
-
-      const stockItem =
-  paintStock.find(
-    (item) =>
-      item.productCode
-        .toLowerCase()
-        .trim() ===
-      paintNo
-        .toLowerCase()
-        .trim()
-  );
-
-if (stockItem) {
-
-  const variant =
-    stockItem.variants?.find(
-      (item) =>
-        item.unit === paintUnit
-    );
-
-  const stockQuantity =
-    variant
-      ? variant.quantity
-      : stockItem.quantity;
-
-  if (
-    newQuantity >
-    stockQuantity
-  ) {
-
-    alert(
-      `Not enough ${paintUnit} stock available. Available: ${stockQuantity}`
-    );
-
-    return;
-  }
-}
-
 
       updatedPaints[
         existingIndex
       ] = {
-
-        ...existingPaint,
-
+        ...updatedPaints[
+          existingIndex
+        ],
         quantity:
-          newQuantity,
-
+          updatedPaints[
+            existingIndex
+          ].quantity +
+          quantity,
       };
-
-
-      setPaints(
-        updatedPaints
-      );
-
     } else {
-
-      /* ==================================================
-         CHECK STOCK
-      ================================================== */
-
-      if (
-        quantity >
-        availableStock
-      ) {
-
-        alert(
-          "Not enough stock available."
-        );
-
-        return;
-      }
-
-
-      /* ==================================================
-         NEW PAINT
-      ================================================== */
-
-      const newPaint: SalePaint = {
-
+      const newPaint:
+        SalePaint = {
         paintName,
-
         shadeCode:
           paintNo,
-
         brand,
-
         purchasePrice:
-          Number(purchasePrice) || 0,
-
+          Number(
+            purchasePrice
+          ) || 0,
         sellingPrice:
           Number(price),
-
         quantity,
-
         unit:
           paintUnit,
-
         variantId:
-          paintVariantId || undefined,
-
+          paintVariantId ||
+          undefined,
       };
 
-
-      setPaints([
+      updatedPaints = [
         ...paints,
         newPaint,
-      ]);
-
+      ];
     }
 
+    setPaints(
+      updatedPaints
+    );
 
-    /* =====================================================
-       CLEAR CURRENT PAINT
-       FOR NEXT PAINT
-    ===================================================== */
-
-    setPaintName("");
-
-    setPaintNo("");
-
-    setBrand("");
-
-    setPurchasePrice("");
-
-    setPrice("");
-
-    setAvailableStock(0);
+    setAvailableStock(
+      Math.max(
+        0,
+        availableForThisSale -
+          quantity
+      )
+    );
 
     setQuantitySold("");
-    setSelectedStockId("");
-
-    setPaintUnit("liter");
   }
-
-
-  /* =======================================================
-     REMOVE PAINT
-  ======================================================= */
 
   function removePaint(
     index: number
   ) {
+    const removedPaint =
+      paints[index];
 
-    setPaints(
+    if (!removedPaint) {
+      return;
+    }
+
+    const updated =
       paints.filter(
         (_, i) =>
           i !== index
-      )
+      );
+
+    setPaints(
+      updated
     );
 
+    const latestStock =
+      getPaintStock();
+
+    const stockItem =
+      latestStock.find(
+        (item) =>
+          item.productCode
+            .toLowerCase()
+            .trim() ===
+          removedPaint.shadeCode
+            .toLowerCase()
+            .trim()
+      );
+
+    if (!stockItem) {
+      return;
+    }
+
+    const variant =
+      stockItem.variants?.find(
+        (item) =>
+          removedPaint.variantId
+            ? item.id ===
+              removedPaint.variantId
+            : item.unit ===
+              removedPaint.unit
+      );
+
+    const totalStock =
+      variant
+        ? variant.quantity
+        : stockItem.quantity;
+
+    const remainingUsed =
+      updated
+        .filter(
+          (item) =>
+            item.shadeCode
+              .toLowerCase()
+              .trim() ===
+            removedPaint.shadeCode
+              .toLowerCase()
+              .trim() &&
+            item.unit ===
+              removedPaint.unit &&
+            (
+              removedPaint.variantId
+                ? item.variantId ===
+                  removedPaint.variantId
+                : !item.variantId
+            )
+        )
+        .reduce(
+          (sum, item) =>
+            sum +
+            item.quantity,
+          0
+        );
+
+    setAvailableStock(
+      Math.max(
+        0,
+        totalStock -
+          remainingUsed
+      )
+    );
   }
-
-
-  /* =======================================================
+    /* =======================================================
      SELECT ENAMEL
   ======================================================= */
 
   function handleEnamelSelect(value: string) {
-
     setSelectedEnamelStockId(value);
 
-    const selected = enamelStock.find(
+    const latestStock = getFreshEnamelStock();
+
+    const selected = latestStock.find(
       (item) => item.id === value
     );
 
@@ -911,28 +1194,80 @@ if (stockItem) {
       return;
     }
 
-    setEnamelName(selected.productName);
-    setEnamelBrand(selected.brand);
+    setEnamelName(
+      selected.productName
+    );
 
-    const variants = selected.variants || [];
+    setEnamelBrand(
+      selected.brand
+    );
+
+    const variants =
+      selected.variants || [];
 
     if (variants.length > 0) {
-      const variant = variants[0];
-      setEnamelVariantId(variant.id);
-      setEnamelUnit(variant.unit as PaintUnit);
-      setEnamelPurchasePrice(variant.price?.toString() || "");
-      setEnamelSellingPrice(variant.sellingPrice?.toString() || "");
-      setEnamelAvailableStock(variant.quantity);
+      const variant =
+        variants[0];
+
+      const reserved =
+        getReservedEnamelQuantity(
+          variant.id,
+          selected.productName,
+          variant.unit as PaintUnit
+        );
+
+      setEnamelVariantId(
+        variant.id
+      );
+
+      setEnamelUnit(
+        variant.unit as PaintUnit
+      );
+
+      setEnamelPurchasePrice(
+        variant.price?.toString() || ""
+      );
+
+      setEnamelSellingPrice(
+        variant.sellingPrice?.toString() || ""
+      );
+
+      setEnamelAvailableStock(
+        Math.max(
+          0,
+          variant.quantity -
+            reserved
+        )
+      );
     } else {
+      const reserved =
+        getReservedEnamelQuantity(
+          `${selected.id}-old`,
+          selected.productName,
+          "liter"
+        );
+
       setEnamelVariantId("");
+
       setEnamelUnit("liter");
-      setEnamelPurchasePrice(selected.price?.toString() || "");
+
+      setEnamelPurchasePrice(
+        selected.price?.toString() || ""
+      );
+
       setEnamelSellingPrice(
         selected.sellingPrice?.toString() ||
         selected.price?.toString() ||
         ""
       );
-      setEnamelAvailableStock(selected.quantity);
+
+      setEnamelAvailableStock(
+        Math.max(
+          0,
+          selected.quantity -
+            reserved
+        )
+      );
     }
   }
 
@@ -941,43 +1276,120 @@ if (stockItem) {
      SELECT ENAMEL SIZE / UNIT
   ======================================================= */
 
-  function handleEnamelUnitSelect(value: string) {
+  function handleEnamelUnitSelect(
+    value: string
+  ) {
+    const latestStock =
+      getFreshEnamelStock();
 
-    const selected = enamelStock.find(
-      (item) => item.id === selectedEnamelStockId
-    );
+    const selected =
+      latestStock.find(
+        (item) =>
+          item.id ===
+          selectedEnamelStockId
+      );
 
     if (!selected) return;
 
-    const variant = selected.variants?.find(
-      (item) => item.id === value
-    );
+    const variant =
+      selected.variants?.find(
+        (item) =>
+          item.id === value
+      );
 
     if (variant) {
-      setEnamelVariantId(variant.id);
-      setEnamelUnit(variant.unit as PaintUnit);
-      setEnamelPurchasePrice(variant.price?.toString() || "");
-      setEnamelSellingPrice(variant.sellingPrice?.toString() || "");
-      setEnamelAvailableStock(variant.quantity);
+      const reserved =
+        getReservedEnamelQuantity(
+          variant.id,
+          selected.productName,
+          variant.unit as PaintUnit
+        );
+
+      setEnamelVariantId(
+        variant.id
+      );
+
+      setEnamelUnit(
+        variant.unit as PaintUnit
+      );
+
+      setEnamelPurchasePrice(
+        variant.price?.toString() ||
+        ""
+      );
+
+      setEnamelSellingPrice(
+        variant.sellingPrice?.toString() ||
+        ""
+      );
+
+      setEnamelAvailableStock(
+        Math.max(
+          0,
+          variant.quantity -
+            reserved
+        )
+      );
+
       return;
     }
 
-    if (value === "legacy-liter" || value === "liter") {
-      setEnamelUnit("liter");
-    } else if (value === "legacy-ml" || value === "ml") {
-      setEnamelUnit("ml");
-    } else if (value === "legacy-gm" || value === "gm") {
-      setEnamelUnit("gm");
+    let selectedUnit:
+      PaintUnit = "liter";
+
+    if (
+      value === "legacy-liter" ||
+      value === "liter"
+    ) {
+      selectedUnit =
+        "liter";
+    } else if (
+      value === "legacy-ml" ||
+      value === "ml"
+    ) {
+      selectedUnit =
+        "ml";
+    } else if (
+      value === "legacy-gm" ||
+      value === "gm"
+    ) {
+      selectedUnit =
+        "gm";
     }
 
-    setEnamelVariantId("");
-    setEnamelPurchasePrice(selected.price?.toString() || "");
+    const reserved =
+      getReservedEnamelQuantity(
+        `${selected.id}-old`,
+        selected.productName,
+        selectedUnit
+      );
+
+    setEnamelUnit(
+      selectedUnit
+    );
+
+    setEnamelVariantId(
+      ""
+    );
+
+    setEnamelPurchasePrice(
+      selected.price?.toString() ||
+      ""
+    );
+
     setEnamelSellingPrice(
       selected.sellingPrice?.toString() ||
       selected.price?.toString() ||
       ""
     );
-    setEnamelAvailableStock(selected.quantity);
+
+    setEnamelAvailableStock(
+      Math.max(
+        0,
+        selected.quantity -
+          reserved
+      )
+    );
   }
 
 
@@ -986,80 +1398,288 @@ if (stockItem) {
   ======================================================= */
 
   function addEnamel() {
-
-    if (!enamelName || !enamelSellingPrice || !enamelQuantity) {
-      alert("Please select an enamel and enter quantity.");
-      return;
-    }
-
-    const quantity = Number(enamelQuantity);
-
-    if (quantity <= 0) {
-      alert("Please enter a valid enamel quantity.");
-      return;
-    }
-
-    if (quantity > enamelAvailableStock) {
+    if (
+      !enamelName ||
+      !enamelSellingPrice ||
+      !enamelQuantity
+    ) {
       alert(
-        `Not enough enamel stock available. Available: ${enamelAvailableStock}`
+        "Please select an enamel and enter quantity."
       );
       return;
     }
 
-    const existingIndex = enamels.findIndex(
-      (enamel) =>
-        enamel.enamelName.toLowerCase().trim() ===
-          enamelName.toLowerCase().trim() &&
-        enamel.unit === enamelUnit
-    );
+    const quantity =
+      Number(enamelQuantity);
 
-    if (existingIndex !== -1) {
-      const updated = [...enamels];
-      const newQuantity = updated[existingIndex].quantity + quantity;
-
-      if (newQuantity > enamelAvailableStock) {
-        alert(
-          `Not enough enamel stock available. Available: ${enamelAvailableStock}`
-        );
-        return;
-      }
-
-      updated[existingIndex] = {
-        ...updated[existingIndex],
-        quantity: newQuantity,
-      };
-
-      setEnamels(updated);
-    } else {
-      setEnamels([
-        ...enamels,
-        {
-          enamelName,
-          brand: enamelBrand,
-          purchasePrice: Number(enamelPurchasePrice) || 0,
-          sellingPrice: Number(enamelSellingPrice),
-          quantity,
-          unit: enamelUnit,
-          variantId: enamelVariantId || undefined,
-        },
-      ]);
+    if (quantity <= 0) {
+      alert(
+        "Please enter a valid enamel quantity."
+      );
+      return;
     }
 
-    setEnamelName("");
-    setEnamelBrand("");
-    setEnamelPurchasePrice("");
-    setEnamelSellingPrice("");
-    setEnamelAvailableStock(0);
+    const latestStock =
+      getFreshEnamelStock();
+
+    const stockItem =
+      latestStock.find(
+        (item) =>
+          item.productName
+            .toLowerCase()
+            .trim() ===
+          enamelName
+            .toLowerCase()
+            .trim()
+      );
+
+    if (!stockItem) {
+      alert(
+        "Enamel stock not found."
+      );
+      return;
+    }
+
+    const variant =
+      stockItem.variants?.find(
+        (item) =>
+          enamelVariantId
+            ? item.id ===
+              enamelVariantId
+            : item.unit ===
+              enamelUnit
+      );
+
+    const stockQuantity =
+      variant
+        ? variant.quantity
+        : stockItem.quantity;
+
+    const variantKey =
+      variant?.id ||
+      `${stockItem.id}-old`;
+
+    const alreadyReserved =
+      getReservedEnamelQuantity(
+        variantKey,
+        stockItem.productName,
+        enamelUnit
+      );
+
+    const availableForThisSale =
+      Math.max(
+        0,
+        stockQuantity -
+          alreadyReserved
+      );
+
+    if (
+      quantity >
+      availableForThisSale
+    ) {
+      alert(
+        `Not enough enamel stock available. Available: ${availableForThisSale}`
+      );
+      return;
+    }
+
+    const existingIndex =
+      enamels.findIndex(
+        (enamel) =>
+          enamel.enamelName
+            .toLowerCase()
+            .trim() ===
+          enamelName
+            .toLowerCase()
+            .trim() &&
+          enamel.unit ===
+            enamelUnit &&
+          (
+            enamelVariantId
+              ? enamel.variantId ===
+                enamelVariantId
+              : !enamel.variantId
+          )
+      );
+
+    let updatedEnamels:
+      SaleEnamel[];
+
+    if (
+      existingIndex !==
+      -1
+    ) {
+      updatedEnamels =
+        [...enamels];
+
+      updatedEnamels[
+        existingIndex
+      ] = {
+        ...updatedEnamels[
+          existingIndex
+        ],
+
+        quantity:
+          updatedEnamels[
+            existingIndex
+          ].quantity +
+          quantity,
+      };
+    } else {
+      updatedEnamels = [
+        ...enamels,
+
+        {
+          enamelName,
+
+          brand:
+            enamelBrand,
+
+          purchasePrice:
+            Number(
+              enamelPurchasePrice
+            ) || 0,
+
+          sellingPrice:
+            Number(
+              enamelSellingPrice
+            ),
+
+          quantity,
+
+          unit:
+            enamelUnit,
+
+          variantId:
+            enamelVariantId ||
+            undefined,
+        },
+      ];
+    }
+
+    setEnamels(
+      updatedEnamels
+    );
+
+    /*
+      IMPORTANT:
+      Add karte hi available stock
+      turant kam hoga.
+    */
+    setEnamelAvailableStock(
+      Math.max(
+        0,
+        availableForThisSale -
+          quantity
+      )
+    );
+
     setEnamelQuantity("");
-    setEnamelVariantId("");
-    setSelectedEnamelStockId("");
-    setEnamelUnit("liter");
   }
 
 
-  function removeEnamel(index: number) {
+  /* =======================================================
+     REMOVE ENAMEL
+  ======================================================= */
+
+  function removeEnamel(
+    index: number
+  ) {
+    const removed =
+      enamels[index];
+
+    if (!removed) {
+      return;
+    }
+
+    const updated =
+      enamels.filter(
+        (_, i) =>
+          i !== index
+      );
+
     setEnamels(
-      enamels.filter((_, i) => i !== index)
+      updated
+    );
+
+    if (
+      removed.enamelName
+        .toLowerCase()
+        .trim() !==
+        enamelName
+          .toLowerCase()
+          .trim() ||
+      removed.unit !==
+        enamelUnit
+    ) {
+      return;
+    }
+
+    const latestStock =
+      getFreshEnamelStock();
+
+    const stockItem =
+      latestStock.find(
+        (item) =>
+          item.productName
+            .toLowerCase()
+            .trim() ===
+          removed.enamelName
+            .toLowerCase()
+            .trim()
+      );
+
+    if (!stockItem) {
+      return;
+    }
+
+    const variant =
+      stockItem.variants?.find(
+        (item) =>
+          removed.variantId
+            ? item.id ===
+              removed.variantId
+            : item.unit ===
+              removed.unit
+      );
+
+    const stockQuantity =
+      variant
+        ? variant.quantity
+        : stockItem.quantity;
+
+    const remainingReserved =
+      updated
+        .filter(
+          (item) =>
+            item.enamelName
+              .toLowerCase()
+              .trim() ===
+            removed.enamelName
+              .toLowerCase()
+              .trim() &&
+            item.unit ===
+              removed.unit &&
+            (
+              removed.variantId
+                ? item.variantId ===
+                  removed.variantId
+                : !item.variantId
+            )
+        )
+        .reduce(
+          (sum, item) =>
+            sum +
+            item.quantity,
+          0
+        );
+
+    setEnamelAvailableStock(
+      Math.max(
+        0,
+        stockQuantity -
+          remainingReserved
+      )
     );
   }
 
@@ -1069,36 +1689,30 @@ if (stockItem) {
   ======================================================= */
 
   function addAccessory() {
-
     const name =
       accessoryName.trim();
 
     const priceValue =
-      Number(accessoryPrice);
-
+      Number(
+        accessoryPrice
+      );
 
     if (!name) {
-
       alert(
         "Please enter accessory name."
       );
-
       return;
     }
-
 
     if (
       !accessoryPrice ||
       priceValue <= 0
     ) {
-
       alert(
         "Please enter a valid accessory price."
       );
-
       return;
     }
-
 
     setAccessories([
       ...accessories,
@@ -1109,9 +1723,7 @@ if (stockItem) {
         price:
           priceValue,
       },
-
     ]);
-
 
     setAccessoryName("");
 
@@ -1126,14 +1738,12 @@ if (stockItem) {
   function removeAccessory(
     index: number
   ) {
-
     setAccessories(
       accessories.filter(
         (_, i) =>
           i !== index
       )
     );
-
   }
 
 
@@ -1142,11 +1752,9 @@ if (stockItem) {
   ======================================================= */
 
   function clearForm() {
-
     setCustomerName("");
 
     setContact("");
-
 
     setPaintName("");
 
@@ -1163,32 +1771,40 @@ if (stockItem) {
     setQuantitySold("");
 
     setPaintUnit("liter");
-    setPaintSize(1);
-    setPaintVariantId("");
-    setSelectedStockId("");
 
+    setPaintSize(1);
+
+    setPaintVariantId("");
+
+    setSelectedStockId("");
 
     setPaints([]);
 
-
     setEnamelName("");
-    setEnamelBrand("");
-    setEnamelPurchasePrice("");
-    setEnamelSellingPrice("");
-    setEnamelAvailableStock(0);
-    setEnamelQuantity("");
-    setEnamelUnit("liter");
-    setEnamelVariantId("");
-    setSelectedEnamelStockId("");
-    setEnamels([]);
 
+    setEnamelBrand("");
+
+    setEnamelPurchasePrice("");
+
+    setEnamelSellingPrice("");
+
+    setEnamelAvailableStock(0);
+
+    setEnamelQuantity("");
+
+    setEnamelUnit("liter");
+
+    setEnamelVariantId("");
+
+    setSelectedEnamelStockId("");
+
+    setEnamels([]);
 
     setAccessoryName("");
 
     setAccessoryPrice("");
 
     setAccessories([]);
-
 
     setPaidAmount("");
 
@@ -1201,49 +1817,89 @@ if (stockItem) {
   ======================================================= */
 
   function saveCustomer() {
-
     if (
       customerName.trim() === "" ||
       contact.trim() === ""
     ) {
-      alert("Please fill customer details.");
+      alert(
+        "Please fill customer details."
+      );
       return;
     }
 
-    if (paints.length === 0 && enamels.length === 0) {
-      alert("Please add at least one paint or enamel.");
+    if (
+      paints.length === 0 &&
+      enamels.length === 0
+    ) {
+      alert(
+        "Please add at least one paint or enamel."
+      );
       return;
     }
+
+    /*
+      Refresh stock before final validation.
+      Isse latest price/quantity use hogi.
+    */
+    const latestPaintStock =
+      getPaintStock();
+
+    const latestEnamelStock =
+      getEnamelStock();
+
+    setPaintStock(
+      latestPaintStock
+    );
+
+    setEnamelStock(
+      latestEnamelStock
+    );
 
     /* =====================================================
        FINAL PAINT STOCK VALIDATION
     ===================================================== */
 
-    for (const paint of paints) {
-      const stockItem = paintStock.find(
-        (item) =>
-          item.productCode.toLowerCase().trim() ===
-          paint.shadeCode.toLowerCase().trim()
-      );
+    for (
+      const paint of paints
+    ) {
+      const stockItem =
+        latestPaintStock.find(
+          (item) =>
+            item.productCode
+              .toLowerCase()
+              .trim() ===
+            paint.shadeCode
+              .toLowerCase()
+              .trim()
+        );
 
       if (!stockItem) {
-        alert(`${paint.paintName} stock not found.`);
+        alert(
+          `${paint.paintName} stock not found.`
+        );
         return;
       }
 
       if (!editingId) {
-        const variant = stockItem.variants?.find(
-          (item) =>
-            paint.variantId
-              ? item.id === paint.variantId
-              : item.unit === paint.unit
-        );
+        const variant =
+          stockItem.variants?.find(
+            (item) =>
+              paint.variantId
+                ? item.id ===
+                  paint.variantId
+                : item.unit ===
+                  paint.unit
+          );
 
-        const stockQuantity = variant
-          ? variant.quantity
-          : stockItem.quantity;
+        const stockQuantity =
+          variant
+            ? variant.quantity
+            : stockItem.quantity;
 
-        if (paint.quantity > stockQuantity) {
+        if (
+          paint.quantity >
+          stockQuantity
+        ) {
           alert(
             `Not enough ${paint.unit} stock for ${paint.paintName}. Available: ${stockQuantity}`
           );
@@ -1256,31 +1912,47 @@ if (stockItem) {
        FINAL ENAMEL STOCK VALIDATION
     ===================================================== */
 
-    for (const enamel of enamels) {
-      const stockItem = enamelStock.find(
-        (item) =>
-          item.productName.toLowerCase().trim() ===
-          enamel.enamelName.toLowerCase().trim()
-      );
+    for (
+      const enamel of enamels
+    ) {
+      const stockItem =
+        latestEnamelStock.find(
+          (item) =>
+            item.productName
+              .toLowerCase()
+              .trim() ===
+            enamel.enamelName
+              .toLowerCase()
+              .trim()
+        );
 
       if (!stockItem) {
-        alert(`${enamel.enamelName} enamel stock not found.`);
+        alert(
+          `${enamel.enamelName} enamel stock not found.`
+        );
         return;
       }
 
       if (!editingId) {
-        const variant = stockItem.variants?.find(
-          (item) =>
-            enamel.variantId
-              ? item.id === enamel.variantId
-              : item.unit === enamel.unit
-        );
+        const variant =
+          stockItem.variants?.find(
+            (item) =>
+              enamel.variantId
+                ? item.id ===
+                  enamel.variantId
+                : item.unit ===
+                  enamel.unit
+          );
 
-        const stockQuantity = variant
-          ? variant.quantity
-          : stockItem.quantity;
+        const stockQuantity =
+          variant
+            ? variant.quantity
+            : stockItem.quantity;
 
-        if (enamel.quantity > stockQuantity) {
+        if (
+          enamel.quantity >
+          stockQuantity
+        ) {
           alert(
             `Not enough ${enamel.unit} enamel stock for ${enamel.enamelName}. Available: ${stockQuantity}`
           );
@@ -1289,50 +1961,106 @@ if (stockItem) {
       }
     }
 
-    const firstItem = paints[0];
-    const firstEnamel = enamels[0];
+    const firstItem =
+      paints[0];
+
+    const firstEnamel =
+      enamels[0];
 
     const customer: Customer = {
-      id: editingId ?? uuid(),
-      category: "paint",
+      id:
+        editingId ??
+        uuid(),
+
+      category:
+        "paint",
+
       customerName,
+
       contact,
-      productName: firstItem?.paintName || firstEnamel?.enamelName || "Enamel",
-      productCode: firstItem?.shadeCode || "",
-      quantitySold: firstItem?.quantity || firstEnamel?.quantity || 0,
+
+      productName:
+        firstItem?.paintName ||
+        firstEnamel?.enamelName ||
+        "Enamel",
+
+      productCode:
+        firstItem?.shadeCode ||
+        "",
+
+      quantitySold:
+        firstItem?.quantity ||
+        firstEnamel?.quantity ||
+        0,
+
       paints,
+
       enamels,
+
       totalAmount,
-      paidAmount: Number(paidAmount) || 0,
+
+      paidAmount:
+        Number(
+          paidAmount
+        ) || 0,
+
       dueAmount,
+
       accessories,
-      createdAt: new Date().toLocaleString(),
+
+      createdAt:
+        new Date().toLocaleString(),
     };
 
     if (editingId) {
-      updateCustomer(customer);
-      alert("Customer Updated Successfully!");
+      updateCustomer(
+        customer
+      );
+
+      alert(
+        "Customer Updated Successfully!"
+      );
     } else {
-      addCustomer(customer);
+      addCustomer(
+        customer
+      );
 
       /* ==================================================
          REDUCE PAINT STOCK
       ================================================== */
-      for (const paint of paints) {
-        const stockItem = paintStock.find(
-          (item) =>
-            item.productCode.toLowerCase().trim() ===
-            paint.shadeCode.toLowerCase().trim()
-        );
+
+      for (
+        const paint of paints
+      ) {
+        const stockItem =
+          latestPaintStock.find(
+            (item) =>
+              item.productCode
+                .toLowerCase()
+                .trim() ===
+              paint.shadeCode
+                .toLowerCase()
+                .trim()
+          );
 
         if (stockItem) {
-          const variant = stockItem.variants?.find(
-            (item) => item.unit === paint.unit
-          );
+          const variant =
+            stockItem.variants?.find(
+              (item) =>
+                paint.variantId
+                  ? item.id ===
+                    paint.variantId
+                  : item.unit ===
+                    paint.unit
+            );
 
           reduceStockVariant(
             stockItem.id,
-            paint.variantId || variant?.id || `${stockItem.id}-old`,
+
+            paint.variantId ||
+              variant?.id ||
+              `${stockItem.id}-old`,
+
             paint.quantity
           );
         }
@@ -1341,30 +2069,51 @@ if (stockItem) {
       /* ==================================================
          REDUCE ENAMEL STOCK
       ================================================== */
-      for (const enamel of enamels) {
-        const stockItem = enamelStock.find(
-          (item) =>
-            item.productName.toLowerCase().trim() ===
-            enamel.enamelName.toLowerCase().trim()
-        );
+
+      for (
+        const enamel of enamels
+      ) {
+        const stockItem =
+          latestEnamelStock.find(
+            (item) =>
+              item.productName
+                .toLowerCase()
+                .trim() ===
+              enamel.enamelName
+                .toLowerCase()
+                .trim()
+          );
 
         if (stockItem) {
-          const variant = stockItem.variants?.find(
-            (item) => item.unit === enamel.unit
-          );
+          const variant =
+            stockItem.variants?.find(
+              (item) =>
+                enamel.variantId
+                  ? item.id ===
+                    enamel.variantId
+                  : item.unit ===
+                    enamel.unit
+            );
 
           reduceStockVariant(
             stockItem.id,
-            enamel.variantId || variant?.id || `${stockItem.id}-old`,
+
+            enamel.variantId ||
+              variant?.id ||
+              `${stockItem.id}-old`,
+
             enamel.quantity
           );
         }
       }
 
-      alert("Customer Saved Successfully!");
+      alert(
+        "Customer Saved Successfully!"
+      );
     }
 
     loadCustomers();
+
     clearForm();
   }
 
@@ -1376,16 +2125,13 @@ if (stockItem) {
   function removeCustomer(
     id: string
   ) {
-
     if (
       !confirm(
         "Delete this customer?"
       )
     ) {
-
       return;
     }
-
 
     deleteCustomer(id);
 
@@ -1400,7 +2146,6 @@ if (stockItem) {
   function editCustomer(
     customer: Customer
   ) {
-
     setEditingId(
       customer.id
     );
@@ -1413,16 +2158,10 @@ if (stockItem) {
       customer.contact
     );
 
-
-    /* =====================================================
-       MULTIPLE PAINT CUSTOMER
-    ===================================================== */
-
     if (
       customer.paints &&
       customer.paints.length > 0
     ) {
-
       const loadedPaints =
         customer.paints.map(
           (paint) => ({
@@ -1434,15 +2173,12 @@ if (stockItem) {
           })
         );
 
-
       setPaints(
         loadedPaints
       );
 
-
       const firstPaint =
         loadedPaints[0];
-
 
       setPaintName(
         firstPaint.paintName
@@ -1472,9 +2208,11 @@ if (stockItem) {
         firstPaint.quantity.toString()
       );
 
+      const latestStock =
+        getPaintStock();
 
       const stockItem =
-        paintStock.find(
+        latestStock.find(
           (item) =>
             item.productCode
               .toLowerCase()
@@ -1484,21 +2222,42 @@ if (stockItem) {
               .trim()
         );
 
-
       if (stockItem) {
+        const variant =
+          stockItem.variants?.find(
+            (item) =>
+              (firstPaint as SalePaint).variantId
+                ? item.id ===
+                  (firstPaint as SalePaint).variantId
+                : item.unit ===
+                  firstPaint.unit
+          );
 
-        setAvailableStock(
-          stockItem.quantity
-        );
+        if (variant) {
+          setPaintVariantId(
+            variant.id
+          );
 
+          setPaintSize(
+            variant.size
+          );
+
+          setAvailableStock(
+            Math.max(
+              0,
+              variant.quantity
+            )
+          );
+        } else {
+          setAvailableStock(
+            Math.max(
+              0,
+              stockItem.quantity
+            )
+          );
+        }
       }
-
     } else {
-
-      /* ==================================================
-         OLD SINGLE PAINT CUSTOMER
-      ================================================== */
-
       setPaintName(
         customer.productName
       );
@@ -1507,28 +2266,26 @@ if (stockItem) {
         customer.productCode
       );
 
-
       setQuantitySold(
         customer.quantitySold?.toString() ||
         ""
       );
 
-
       setPaintUnit(
         "liter"
       );
 
+      const latestStock =
+        getPaintStock();
 
       const stockItem =
-        paintStock.find(
+        latestStock.find(
           (item) =>
             item.productName ===
             customer.productName
         );
 
-
       if (stockItem) {
-
         setBrand(
           stockItem.brand
         );
@@ -1547,31 +2304,22 @@ if (stockItem) {
         setAvailableStock(
           stockItem.quantity
         );
-
       }
-
     }
-
 
     setAccessories(
       customer.accessories ||
       []
     );
 
-
     setPaidAmount(
       customer.paidAmount.toString()
     );
 
-
     window.scrollTo({
-
       top: 0,
-
       behavior: "smooth",
-
     });
-
   }
 
 
@@ -1582,15 +2330,12 @@ if (stockItem) {
   const filteredCustomers =
     customers.filter(
       (customer) => {
-
         const value =
           search
             .toLowerCase()
             .trim();
 
-
         return (
-
           customer.customerName
             .toLowerCase()
             .includes(value)
@@ -1626,705 +2371,844 @@ if (stockItem) {
                 .toLowerCase()
                 .includes(value)
           )
-
         );
-
       }
     );
 
 
   /* =======================================================
-     UI
+     UI STARTS IN PART 3
   ======================================================= */
 
   return (
+        <div className="min-h-screen bg-slate-950 text-white p-4 md:p-6">
+      <div className="max-w-7xl mx-auto">
 
-    <div className="min-h-screen bg-[#0f172a] py-10 px-4">
+        {/* ================= HEADER ================= */}
 
-      <div className="max-w-7xl mx-auto bg-[#1e293b] rounded-2xl shadow-2xl border border-green-700 p-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold">
+            Paint Sales
+          </h1>
 
-
-        {/* =================================================
-            TITLE
-        ================================================= */}
-
-        <h1 className="text-5xl font-bold text-green-400 text-center mb-10">
-
-          Premium Paints
-
-        </h1>
-
-
-        {/* =================================================
-            CUSTOMER DETAILS
-        ================================================= */}
-
-        <div className="grid md:grid-cols-2 gap-5">
-
-          <input
-            type="text"
-            placeholder="Customer Name"
-            value={customerName}
-            onChange={(e) =>
-              setCustomerName(
-                e.target.value
-              )
-            }
-            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-          />
-
-
-          <input
-            type="text"
-            placeholder="Contact Number"
-            value={contact}
-            onChange={(e) =>
-              setContact(
-                e.target.value
-              )
-            }
-            className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-          />
-
+          <p className="text-slate-400 mt-1">
+            Paint, Enamel, Accessories & Customer Sales
+          </p>
         </div>
 
 
-        {/* =================================================
-            PAINT SELECTION
-        ================================================= */}
+        {/* ================= CUSTOMER DETAILS ================= */}
 
-        <div className="mt-6 rounded-xl border border-green-600 bg-slate-900 p-5">
-
-          <h2 className="text-xl font-bold text-green-400 mb-5">
-
-            Add Paint
-
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
+          <h2 className="text-xl font-semibold mb-4">
+            Customer Details
           </h2>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-          <div className="grid md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Customer Name
+              </label>
+
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) =>
+                  setCustomerName(e.target.value)
+                }
+                placeholder="Enter customer name"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Contact Number
+              </label>
+
+              <input
+                type="text"
+                value={contact}
+                onChange={(e) =>
+                  setContact(e.target.value)
+                }
+                placeholder="Enter contact number"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-blue-500"
+              />
+            </div>
+
+          </div>
+        </div>
 
 
-            {/* PAINT SELECT */}
+        {/* =====================================================
+            PAINT SECTION
+        ===================================================== */}
 
-            <select
-              value={selectedStockId}
-              onChange={(e) =>
-                handlePaintSelect(e.target.value)
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-            >
-              <option value="">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
+
+          <h2 className="text-xl font-semibold mb-4">
+            Paint
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            {/* SELECT PAINT */}
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
                 Select Paint
-              </option>
+              </label>
 
-              {paintStock.map((item) => (
-                <option
-                  key={item.id}
-                  value={item.id}
-                >
-                  {item.productName} ({item.productCode})
+              <select
+                value={selectedStockId}
+                onChange={(e) =>
+                  handlePaintSelect(e.target.value)
+                }
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              >
+                <option value="">
+                  Select Paint
                 </option>
-              ))}
-            </select>
+
+                {paintStock.map((item) => (
+                  <option
+                    key={item.id}
+                    value={item.id}
+                  >
+                    {item.productName}
+                    {item.productCode
+                      ? ` - ${item.productCode}`
+                      : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
 
 
             {/* SHADE CODE */}
 
-            <input
-              type="text"
-              placeholder="Enter Shade Code"
-              value={paintNo}
-              onChange={(e) =>
-                handleShadeCode(e.target.value)
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-yellow-500 text-white"
-            />
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Shade Code
+              </label>
+
+              <input
+                type="text"
+                value={paintNo}
+                onChange={(e) =>
+                  handleShadeCode(e.target.value)
+                }
+                placeholder="Shade code"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              />
+            </div>
+
+
+            {/* BRAND */}
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Brand
+              </label>
+
+              <input
+                type="text"
+                value={brand}
+                readOnly
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-300"
+              />
+            </div>
+
 
             {/* SIZE */}
 
-            {/* SIZE / UNIT */}
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Size
+              </label>
 
-            <select
-              value={paintVariantId}
-              onChange={(e) =>
-                handlePaintUnitSelect(e.target.value)
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-cyan-500 text-white font-semibold"
-            >
-              <option value="">
-                Select Size / Unit
-              </option>
-
-              {(() => {
-                const selected = paintStock.find(
-                  (item) => item.id === selectedStockId
-                );
-
-                const variants = selected?.variants || [];
-
-                if (variants.length > 0) {
-                  return variants.map((variant) => (
-                    <option
-                      key={variant.id}
-                      value={variant.id}
-                    >
-                      {variant.size}{" "}
-                      {String(variant.unit) === "liter"
-                        ? "Ltr"
-                        : String(variant.unit) === "ml"
-                        ? "ml"
-                        : "Gram"}
-                    </option>
-                  ));
+              <select
+                value={
+                  paintVariantId ||
+                  `legacy-${paintUnit}`
                 }
-
-                return (
+                onChange={(e) =>
+                  handlePaintUnitSelect(
+                    e.target.value
+                  )
+                }
+                disabled={!selectedStockId}
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none disabled:opacity-50"
+              >
+                {selectedStockId &&
+                paintStock
+                  .find(
+                    (item) =>
+                      item.id ===
+                      selectedStockId
+                  )
+                  ?.variants?.length ? (
+                  paintStock
+                    .find(
+                      (item) =>
+                        item.id ===
+                        selectedStockId
+                    )
+                    ?.variants?.map(
+                      (variant) => (
+                        <option
+                          key={variant.id}
+                          value={variant.id}
+                        >
+                          {variant.size}{" "}
+                          {variant.unit}
+                        </option>
+                      )
+                    )
+                ) : (
                   <>
-                    <option value="liter">Liter</option>
-                    <option value="ml">ml</option>
-                    <option value="gm">gm</option>
+                    <option value="legacy-liter">
+                      Liter
+                    </option>
+
+                    <option value="legacy-ml">
+                      ML
+                    </option>
+
+                    <option value="legacy-gm">
+                      GM
+                    </option>
                   </>
-                );
-              })()}
-            </select>
+                )}
+              </select>
+            </div>
 
 
-            {/* BRAND */}
+            {/* PURCHASE PRICE */}
 
-            <input
-              type="text"
-              value={brand}
-              readOnly
-              placeholder="Brand"
-              className="p-4 rounded-xl bg-slate-900 border border-blue-500 text-blue-400"
-            />
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Purchase Price
+              </label>
 
-
-            {/* ORIGINAL PRICE */}
-
-            <input
-              type="text"
-              value={
-                purchasePrice
-                  ? `₹${purchasePrice}`
-                  : ""
-              }
-              readOnly
-              placeholder="Price Per Unit"
-              className="p-4 rounded-xl bg-slate-900 border border-orange-500 text-orange-400"
-            />
+              <input
+                type="number"
+                value={purchasePrice}
+                readOnly
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-300"
+              />
+            </div>
 
 
             {/* SELLING PRICE */}
 
-            <input
-              type="text"
-              value={
-                price
-                  ? `₹${price}`
-                  : ""
-              }
-              readOnly
-              placeholder="Selling Price Per Unit"
-              className="p-4 rounded-xl bg-slate-900 border border-green-500 text-green-400"
-            />
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Selling Price
+              </label>
+
+              <input
+                type="number"
+                value={price}
+                onChange={(e) =>
+                  setPrice(e.target.value)
+                }
+                placeholder="Selling price"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              />
+            </div>
 
 
             {/* AVAILABLE STOCK */}
 
-            <input
-              type="text"
-              value={
-                `${availableStock} Available`
-              }
-              readOnly
-              className="p-4 rounded-xl bg-slate-900 border border-purple-500 text-purple-400 font-bold"
-            />
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Available Stock
+              </label>
+
+              <div className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+                <span className="font-semibold text-green-400">
+                  {availableStock}
+                </span>{" "}
+                <span className="text-slate-400">
+                  {paintSize} {paintUnit}
+                </span>
+              </div>
+            </div>
 
 
-            {/* =================================================
-                QUANTITY
-            ================================================= */}
+            {/* QUANTITY */}
 
-            <input
-              type="number"
-              min="0"
-              step="any"
-              placeholder={`Quantity (${paintUnit})`}
-              value={quantitySold}
-              onChange={(e) =>
-                setQuantitySold(
-                  e.target.value
-                )
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-            />
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Quantity
+              </label>
+
+              <input
+                type="number"
+                min="1"
+                value={quantitySold}
+                onChange={(e) =>
+                  setQuantitySold(
+                    e.target.value
+                  )
+                }
+                placeholder="Quantity"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              />
+            </div>
+
+
+            {/* ADD PAINT */}
+
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={addPaint}
+                className="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold"
+              >
+                + Add Paint
+              </button>
+            </div>
 
           </div>
 
 
-          {/* =================================================
-              ADD PAINT BUTTON
-          ================================================= */}
-
-          <button
-            type="button"
-            onClick={addPaint}
-            className="mt-5 bg-green-600 hover:bg-green-500 text-white font-bold px-8 py-3 rounded-xl"
-          >
-
-            + Add Paint
-
-          </button>
-
-
-          {/* =================================================
-              ADDED PAINTS
-          ================================================= */}
+          {/* ================= ADDED PAINTS ================= */}
 
           {paints.length > 0 && (
+            <div className="mt-6 overflow-x-auto">
 
-            <div className="mt-6 space-y-3">
-
-              <h3 className="text-lg font-bold text-yellow-400">
-
+              <h3 className="font-semibold mb-3">
                 Added Paints
-
               </h3>
 
+              <table className="w-full min-w-[800px] border-collapse">
 
-              {paints.map(
-                (paint, index) => (
+                <thead>
+                  <tr className="bg-slate-800 text-left">
 
-                  <div
-                    key={`${paint.shadeCode}-${paint.unit}-${index}`}
-                    className="bg-slate-800 rounded-xl border border-slate-700 p-4"
-                  >
+                    <th className="p-3">
+                      Paint
+                    </th>
 
-                    <div className="grid md:grid-cols-7 gap-3 items-center">
+                    <th className="p-3">
+                      Shade
+                    </th>
 
+                    <th className="p-3">
+                      Brand
+                    </th>
 
-                      {/* NAME */}
+                    <th className="p-3">
+                      Size
+                    </th>
 
-                      <div>
+                    <th className="p-3">
+                      Purchase
+                    </th>
 
-                        <p className="text-white font-bold">
+                    <th className="p-3">
+                      Selling
+                    </th>
 
+                    <th className="p-3">
+                      Qty
+                    </th>
+
+                    <th className="p-3">
+                      Total
+                    </th>
+
+                    <th className="p-3">
+                      Action
+                    </th>
+
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {paints.map(
+                    (paint, index) => (
+                      <tr
+                        key={`${paint.shadeCode}-${paint.variantId || paint.unit}-${index}`}
+                        className="border-b border-slate-800"
+                      >
+                        <td className="p-3">
                           {paint.paintName}
+                        </td>
 
-                        </p>
+                        <td className="p-3">
+                          {paint.shadeCode}
+                        </td>
 
-                        <p className="text-gray-400 text-sm">
-
+                        <td className="p-3">
                           {paint.brand}
+                        </td>
 
-                        </p>
+                        <td className="p-3">
+                          {paint.unit}
+                        </td>
 
-                      </div>
+                        <td className="p-3">
+                          ₹{paint.purchasePrice}
+                        </td>
 
+                        <td className="p-3">
+                          ₹{paint.sellingPrice}
+                        </td>
 
-                      {/* SHADE */}
+                        <td className="p-3">
+                          {paint.quantity}
+                        </td>
 
-                      <div className="text-yellow-400">
+                        <td className="p-3 font-semibold">
+                          ₹
+                          {paint.sellingPrice *
+                            paint.quantity}
+                        </td>
 
-                        Shade:
-                        <br />
+                        <td className="p-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removePaint(
+                                index
+                              )
+                            }
+                            className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
 
-                        {paint.shadeCode}
-
-                      </div>
-
-
-                      {/* PRICE */}
-
-                      <div className="text-orange-400">
-
-                        Price:
-                        <br />
-
-                        ₹{paint.purchasePrice}
-
-                      </div>
-
-
-                      {/* SELLING */}
-
-                      <div className="text-green-400">
-
-                        Selling:
-                        <br />
-
-                        ₹{paint.sellingPrice}
-
-                      </div>
-
-
-                      {/* QUANTITY */}
-
-                      <div className="text-purple-400">
-
-                        Qty:
-                        <br />
-
-                        {paint.quantity}{" "}
-                        {paint.unit}
-
-                      </div>
-
-
-                      {/* TOTAL */}
-
-                      <div className="text-cyan-400">
-
-                        Total:
-                        <br />
-
-                        ₹
-                        {paint.sellingPrice *
-                          paint.quantity}
-
-                      </div>
-
-
-                      {/* REMOVE */}
-
-                      <div className="text-right">
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            removePaint(
-                              index
-                            )
-                          }
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg"
-                        >
-
-                          Remove
-
-                        </button>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                )
-              )}
-
-
-              {/* PAINT TOTAL */}
-
-              <div className="text-right text-green-400 font-bold text-lg">
-
-                Paints Total: ₹
-                {paintsTotal}
-
-              </div>
-
+              </table>
             </div>
-
           )}
-
         </div>
 
 
-        {/* =================================================
-            ENAMEL
-        ================================================= */}
+        {/* =====================================================
+            ENAMEL SECTION
+        ===================================================== */}
 
-        <div className="mt-6 rounded-xl border border-pink-500 bg-slate-900 p-5">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
 
-          <h2 className="text-xl font-bold text-pink-400 mb-5">
+          <h2 className="text-xl font-semibold mb-4">
             Enamel
           </h2>
 
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-            {/* ENAMEL SELECT */}
-            <select
-              value={selectedEnamelStockId}
-              onChange={(e) =>
-                handleEnamelSelect(e.target.value)
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-pink-500 text-white"
-            >
-              <option value="">
+            {/* SELECT ENAMEL */}
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
                 Select Enamel
-              </option>
+              </label>
 
-              {enamelStock.map((item) => (
-                <option
-                  key={item.id}
-                  value={item.id}
-                >
-                  {item.productName}
-                </option>
-              ))}
-            </select>
-
-            {/* SIZE / UNIT */}
-            <select
-              value={enamelVariantId}
-              onChange={(e) =>
-                handleEnamelUnitSelect(e.target.value)
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-cyan-500 text-white font-semibold"
-            >
-              <option value="">
-                Select Size / Unit
-              </option>
-
-              {(() => {
-                const selected = enamelStock.find(
-                  (item) => item.id === selectedEnamelStockId
-                );
-
-                const variants = selected?.variants || [];
-
-                if (variants.length > 0) {
-                  return variants.map((variant) => (
-                    <option
-                      key={variant.id}
-                      value={variant.id}
-                    >
-                      {variant.size}{" "}
-                      {String(variant.unit) === "liter"
-                        ? "Ltr"
-                        : String(variant.unit) === "ml"
-                        ? "ml"
-                        : "Gram"}
-                    </option>
-                  ));
+              <select
+                value={selectedEnamelStockId}
+                onChange={(e) =>
+                  handleEnamelSelect(
+                    e.target.value
+                  )
                 }
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              >
+                <option value="">
+                  Select Enamel
+                </option>
 
-                return (
-                  <>
-                    <option value="legacy-liter">Liter</option>
-                    <option value="legacy-ml">ml</option>
-                    <option value="legacy-gm">gm</option>
-                  </>
-                );
-              })()}
-            </select>
+                {enamelStock.map(
+                  (item) => (
+                    <option
+                      key={item.id}
+                      value={item.id}
+                    >
+                      {item.productName}
+                      {item.brand
+                        ? ` - ${item.brand}`
+                        : ""}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
+
 
             {/* BRAND */}
-            <input
-              type="text"
-              value={enamelBrand}
-              readOnly
-              placeholder="Brand"
-              className="p-4 rounded-xl bg-slate-900 border border-blue-500 text-blue-400"
-            />
 
-            {/* ACTUAL PRICE */}
-            <input
-              type="text"
-              value={
-                enamelPurchasePrice
-                  ? `₹${enamelPurchasePrice}`
-                  : ""
-              }
-              readOnly
-              placeholder="Actual Price Per Unit"
-              className="p-4 rounded-xl bg-slate-900 border border-orange-500 text-orange-400"
-            />
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Brand
+              </label>
+
+              <input
+                type="text"
+                value={enamelBrand}
+                readOnly
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-300"
+              />
+            </div>
+
+
+            {/* ENAMEL SIZE */}
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Size
+              </label>
+
+              <select
+                value={
+                  enamelVariantId ||
+                  `legacy-${enamelUnit}`
+                }
+                onChange={(e) =>
+                  handleEnamelUnitSelect(
+                    e.target.value
+                  )
+                }
+                disabled={
+                  !selectedEnamelStockId
+                }
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none disabled:opacity-50"
+              >
+                {selectedEnamelStockId &&
+                enamelStock
+                  .find(
+                    (item) =>
+                      item.id ===
+                      selectedEnamelStockId
+                  )
+                  ?.variants?.length ? (
+                  enamelStock
+                    .find(
+                      (item) =>
+                        item.id ===
+                        selectedEnamelStockId
+                    )
+                    ?.variants?.map(
+                      (variant) => (
+                        <option
+                          key={variant.id}
+                          value={variant.id}
+                        >
+                          {variant.size}{" "}
+                          {variant.unit}
+                        </option>
+                      )
+                    )
+                ) : (
+                  <>
+                    <option value="legacy-liter">
+                      Liter
+                    </option>
+
+                    <option value="legacy-ml">
+                      ML
+                    </option>
+
+                    <option value="legacy-gm">
+                      GM
+                    </option>
+                  </>
+                )}
+              </select>
+            </div>
+
+
+            {/* PURCHASE PRICE */}
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Purchase Price
+              </label>
+
+              <input
+                type="number"
+                value={enamelPurchasePrice}
+                readOnly
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-300"
+              />
+            </div>
+
 
             {/* SELLING PRICE */}
-            <input
-              type="text"
-              value={
-                enamelSellingPrice
-                  ? `₹${enamelSellingPrice}`
-                  : ""
-              }
-              readOnly
-              placeholder="Selling Price Per Unit"
-              className="p-4 rounded-xl bg-slate-900 border border-green-500 text-green-400"
-            />
 
-            {/* AVAILABLE STOCK */}
-            <input
-              type="text"
-              value={`${enamelAvailableStock} Available`}
-              readOnly
-              className="p-4 rounded-xl bg-slate-900 border border-purple-500 text-purple-400 font-bold"
-            />
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Selling Price
+              </label>
 
-            {/* QUANTITY */}
-            <input
-              type="number"
-              min="0"
-              step="any"
-              placeholder={`Quantity (${enamelUnit})`}
-              value={enamelQuantity}
-              onChange={(e) =>
-                setEnamelQuantity(e.target.value)
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-pink-500 text-white"
-            />
+              <input
+                type="number"
+                value={enamelSellingPrice}
+                onChange={(e) =>
+                  setEnamelSellingPrice(
+                    e.target.value
+                  )
+                }
+                placeholder="Selling price"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              />
+            </div>
+
+
+            {/* AVAILABLE ENAMEL STOCK */}
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Available Stock
+              </label>
+
+              <div className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+                <span className="font-semibold text-green-400">
+                  {enamelAvailableStock}
+                </span>{" "}
+                <span className="text-slate-400">
+                  {enamelUnit}
+                </span>
+              </div>
+            </div>
+
+
+            {/* ENAMEL QUANTITY */}
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Quantity
+              </label>
+
+              <input
+                type="number"
+                min="1"
+                value={enamelQuantity}
+                onChange={(e) =>
+                  setEnamelQuantity(
+                    e.target.value
+                  )
+                }
+                placeholder="Quantity"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              />
+            </div>
+
+
+            {/* ADD ENAMEL */}
+
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={addEnamel}
+                className="w-full bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg font-semibold"
+              >
+                + Add Enamel
+              </button>
+            </div>
 
           </div>
 
-          <button
-            type="button"
-            onClick={addEnamel}
-            className="mt-5 bg-pink-600 hover:bg-pink-500 text-white font-bold px-8 py-3 rounded-xl"
-          >
-            + Add Enamel
-          </button>
+
+          {/* ================= ADDED ENAMELS ================= */}
 
           {enamels.length > 0 && (
-            <div className="mt-6 space-y-3">
+            <div className="mt-6 overflow-x-auto">
 
-              <h3 className="text-lg font-bold text-pink-400">
+              <h3 className="font-semibold mb-3">
                 Added Enamels
               </h3>
 
-              {enamels.map((enamel, index) => (
-                <div
-                  key={`${enamel.enamelName}-${enamel.unit}-${index}`}
-                  className="bg-slate-800 rounded-xl border border-slate-700 p-4"
-                >
-                  <div className="grid md:grid-cols-6 gap-3 items-center">
-                    <div>
-                      <p className="text-white font-bold">
-                        {enamel.enamelName}
-                      </p>
-                      <p className="text-gray-400 text-sm">
-                        {enamel.brand}
-                      </p>
-                    </div>
+              <table className="w-full min-w-[750px] border-collapse">
 
-                    <div className="text-orange-400">
-                      Actual:<br />₹{enamel.purchasePrice}
-                    </div>
+                <thead>
+                  <tr className="bg-slate-800 text-left">
 
-                    <div className="text-green-400">
-                      Selling:<br />₹{enamel.sellingPrice}
-                    </div>
+                    <th className="p-3">
+                      Enamel
+                    </th>
 
-                    <div className="text-purple-400">
-                      Qty:<br />{enamel.quantity} {enamel.unit}
-                    </div>
+                    <th className="p-3">
+                      Brand
+                    </th>
 
-                    <div className="text-cyan-400">
-                      Total:<br />
-                      ₹{enamel.sellingPrice * enamel.quantity}
-                    </div>
+                    <th className="p-3">
+                      Size
+                    </th>
 
-                    <div className="text-right">
-                      <button
-                        type="button"
-                        onClick={() => removeEnamel(index)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg"
+                    <th className="p-3">
+                      Purchase
+                    </th>
+
+                    <th className="p-3">
+                      Selling
+                    </th>
+
+                    <th className="p-3">
+                      Qty
+                    </th>
+
+                    <th className="p-3">
+                      Total
+                    </th>
+
+                    <th className="p-3">
+                      Action
+                    </th>
+
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {enamels.map(
+                    (enamel, index) => (
+                      <tr
+                        key={`${enamel.enamelName}-${enamel.variantId || enamel.unit}-${index}`}
+                        className="border-b border-slate-800"
                       >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                        <td className="p-3">
+                          {enamel.enamelName}
+                        </td>
 
-              <div className="text-right text-pink-400 font-bold text-lg">
-                Enamel Total: ₹{enamelsTotal}
-              </div>
+                        <td className="p-3">
+                          {enamel.brand}
+                        </td>
 
+                        <td className="p-3">
+                          {enamel.unit}
+                        </td>
+
+                        <td className="p-3">
+                          ₹
+                          {enamel.purchasePrice}
+                        </td>
+
+                        <td className="p-3">
+                          ₹
+                          {enamel.sellingPrice}
+                        </td>
+
+                        <td className="p-3">
+                          {enamel.quantity}
+                        </td>
+
+                        <td className="p-3 font-semibold">
+                          ₹
+                          {enamel.sellingPrice *
+                            enamel.quantity}
+                        </td>
+
+                        <td className="p-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              removeEnamel(
+                                index
+                              )
+                            }
+                            className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+                          >
+                            Remove
+                          </button>
+                        </td>
+
+                      </tr>
+                    )
+                  )}
+                </tbody>
+
+              </table>
             </div>
           )}
-
         </div>
 
 
-        {/* =================================================
+        {/* =====================================================
             ACCESSORIES
-        ================================================= */}
+        ===================================================== */}
 
-        <div className="mt-6 rounded-xl border border-cyan-500 bg-slate-900 p-5">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
 
-          <h2 className="text-xl font-bold text-cyan-400 mb-4">
-
+          <h2 className="text-xl font-semibold mb-4">
             Accessories
-
           </h2>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-          <div className="grid md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Accessory Name
+              </label>
 
-            <input
-              type="text"
-              placeholder="Accessory Name"
-              value={accessoryName}
-              onChange={(e) =>
-                setAccessoryName(
-                  e.target.value
-                )
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-cyan-500 text-white"
-            />
+              <input
+                type="text"
+                value={accessoryName}
+                onChange={(e) =>
+                  setAccessoryName(
+                    e.target.value
+                  )
+                }
+                placeholder="Brush, Roller, Tape..."
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              />
+            </div>
 
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Price
+              </label>
 
-            <input
-              type="number"
-              placeholder="Accessory Price"
-              value={accessoryPrice}
-              onChange={(e) =>
-                setAccessoryPrice(
-                  e.target.value
-                )
-              }
-              className="p-4 rounded-xl bg-slate-800 border border-cyan-500 text-white"
-            />
+              <input
+                type="number"
+                value={accessoryPrice}
+                onChange={(e) =>
+                  setAccessoryPrice(
+                    e.target.value
+                  )
+                }
+                placeholder="Price"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              />
+            </div>
 
-
-            <button
-              type="button"
-              onClick={
-                addAccessory
-              }
-              className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-xl px-6 py-3"
-            >
-
-              + Add Accessory
-
-            </button>
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={addAccessory}
+                className="w-full bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-semibold"
+              >
+                + Add Accessory
+              </button>
+            </div>
 
           </div>
 
 
           {accessories.length > 0 && (
-
             <div className="mt-5 space-y-2">
 
               {accessories.map(
-                (
-                  item,
-                  index
-                ) => (
-
+                (item, index) => (
                   <div
                     key={`${item.name}-${index}`}
-                    className="flex items-center justify-between bg-slate-800 rounded-xl p-3 border border-slate-700"
+                    className="flex items-center justify-between bg-slate-800 rounded-lg p-3"
                   >
-
                     <div>
-
-                      <span className="text-white font-semibold">
-
+                      <span className="font-medium">
                         {item.name}
-
                       </span>
 
-                      <span className="text-cyan-400 ml-3">
-
+                      <span className="text-slate-400 ml-3">
                         ₹{item.price}
-
                       </span>
-
                     </div>
-
 
                     <button
                       type="button"
@@ -2333,182 +3217,185 @@ if (stockItem) {
                           index
                         )
                       }
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg"
+                      className="bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
                     >
-
                       Remove
-
                     </button>
-
                   </div>
-
                 )
               )}
 
+            </div>
+          )}
+        </div>
 
-              <div className="text-right text-cyan-400 font-bold pt-2">
 
-                Accessories Total: ₹
-                {accessoriesTotal}
+        {/* =====================================================
+            PAYMENT SUMMARY
+        ===================================================== */}
 
-              </div>
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 mb-6">
 
+          <h2 className="text-xl font-semibold mb-4">
+            Payment
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+            <div className="bg-slate-800 rounded-lg p-4">
+              <p className="text-sm text-slate-400">
+                Paint Total
+              </p>
+
+              <p className="text-xl font-bold mt-1">
+                ₹{paintsTotal}
+              </p>
             </div>
 
-          )}
+            <div className="bg-slate-800 rounded-lg p-4">
+              <p className="text-sm text-slate-400">
+                Enamel Total
+              </p>
 
-        </div>
+              <p className="text-xl font-bold mt-1">
+                ₹{enamelsTotal}
+              </p>
+            </div>
 
+            <div className="bg-slate-800 rounded-lg p-4">
+              <p className="text-sm text-slate-400">
+                Accessories
+              </p>
 
-        {/* =================================================
-            TOTAL
-        ================================================= */}
+              <p className="text-xl font-bold mt-1">
+                ₹{accessoriesTotal}
+              </p>
+            </div>
 
-        <div className="mt-6">
+            <div className="bg-slate-800 rounded-lg p-4">
+              <p className="text-sm text-slate-400">
+                Total Amount
+              </p>
 
-          <input
-            type="text"
-            value={
-              `Total Amount : ₹ ${totalAmount}`
-            }
-            readOnly
-            className="w-full p-4 rounded-xl bg-slate-900 border border-orange-500 text-orange-400 font-bold"
-          />
-
-        </div>
-
-
-        {/* =================================================
-            PAID
-        ================================================= */}
-
-        <div className="mt-5">
-
-          <input
-            type="number"
-            placeholder="Amount Paid"
-            value={paidAmount}
-            onChange={(e) =>
-              setPaidAmount(
-                e.target.value
-              )
-            }
-            className="w-full p-4 rounded-xl bg-slate-800 border border-green-600 text-white"
-          />
-
-        </div>
-
-
-        {/* =================================================
-            DUE
-        ================================================= */}
-
-        <div className="mt-6">
-
-          <input
-            type="text"
-            value={
-              `Due Amount : ₹ ${dueAmount}`
-            }
-            readOnly
-            className="w-full p-4 rounded-xl bg-slate-900 border border-yellow-500 text-yellow-400 font-bold"
-          />
-
-        </div>
-
-
-        {/* =================================================
-            STOCK WARNING
-        ================================================= */}
-
-        {paints.length === 0 && (
-
-          <div className="mt-4 bg-slate-800 text-gray-300 p-4 rounded-xl text-center">
-
-            Add paint or enamel to continue.
+              <p className="text-xl font-bold text-green-400 mt-1">
+                ₹{totalAmount}
+              </p>
+            </div>
 
           </div>
 
-        )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Paid Amount
+              </label>
+
+              <input
+                type="number"
+                min="0"
+                value={paidAmount}
+                onChange={(e) =>
+                  setPaidAmount(
+                    e.target.value
+                  )
+                }
+                placeholder="Paid amount"
+                className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-slate-400 mb-1">
+                Due Amount
+              </label>
+
+              <div className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2">
+                <span
+                  className={
+                    dueAmount > 0
+                      ? "font-bold text-red-400"
+                      : "font-bold text-green-400"
+                  }
+                >
+                  ₹{dueAmount}
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
 
 
-        {/* =================================================
-            BUTTONS
-        ================================================= */}
+        {/* =====================================================
+            SAVE / UPDATE
+        ===================================================== */}
 
-        <div className="mt-6 flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3 mb-8">
 
           <button
             type="button"
-            onClick={
-              saveCustomer
-            }
-            className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-4 rounded-xl"
+            onClick={saveCustomer}
+            className="bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold"
           >
-
             {editingId
               ? "Update Customer"
               : "Save Customer"}
-
           </button>
-
 
           <button
             type="button"
-            onClick={
-              clearForm
-            }
-            className="bg-red-600 hover:bg-red-700 text-white font-bold px-8 py-4 rounded-xl"
+            onClick={clearForm}
+            className="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg font-semibold"
           >
-
-            Clear
-
+            Clear Form
           </button>
 
         </div>
 
 
-        {/* =================================================
-            SEARCH
-        ================================================= */}
+        {/* =====================================================
+            CUSTOMER HISTORY
+        ===================================================== */}
 
-        <div className="mt-8">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
 
-          <input
-            type="text"
-            placeholder="Search Customer..."
-            value={search}
-            onChange={(e) =>
-              setSearch(
-                e.target.value
-              )
-            }
-            className="w-full p-4 rounded-xl bg-slate-800 border border-blue-500 text-white"
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+
+            <div>
+              <h2 className="text-xl font-semibold">
+                Paint Customers
+              </h2>
+
+              <p className="text-sm text-slate-400">
+                Saved customer sales records
+              </p>
+            </div>
+
+            <input
+              type="text"
+              value={search}
+              onChange={(e) =>
+                setSearch(
+                  e.target.value
+                )
+              }
+              placeholder="Search customer, paint or shade..."
+              className="w-full md:w-80 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 outline-none"
+            />
+
+          </div>
+
+          <CustomerTable
+            customers={filteredCustomers}
+            onDelete={removeCustomer}
+            onEdit={editCustomer}
           />
 
         </div>
 
-
-        {/* =================================================
-            CUSTOMER TABLE
-        ================================================= */}
-
-        <CustomerTable
-          customers={
-            filteredCustomers
-          }
-          onDelete={
-            removeCustomer
-          }
-          onEdit={
-            editCustomer
-          }
-        />
-
-
       </div>
-
     </div>
-
   );
 }
