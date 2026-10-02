@@ -15,7 +15,7 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
 
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, headers) {
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
@@ -24,24 +24,56 @@ export async function updateSession(request: NextRequest) {
             request,
           });
 
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, options);
-          });
+          cookiesToSet.forEach(
+            ({ name, value, options }) => {
+              supabaseResponse.cookies.set(
+                name,
+                value,
+                options
+              );
+            }
+          );
+
+          if (headers) {
+            Object.entries(headers).forEach(
+              ([key, value]) => {
+                supabaseResponse.headers.set(
+                  key,
+                  value
+                );
+              }
+            );
+          }
         },
       },
     }
   );
 
-  const { data } = await supabase.auth.getClaims();
+  const { data, error } =
+    await supabase.auth.getClaims();
+
   const user = data?.claims;
 
   const pathname = request.nextUrl.pathname;
 
-  // Agar login nahi hai aur login page nahi khola hai
-  // to login page par bhej do.
+  // Agar user login nahi hai
+  // aur login page par nahi hai,
+  // to login page par bhejo.
   if (!user && pathname !== "/login") {
     const url = request.nextUrl.clone();
+
     url.pathname = "/login";
+
+    return NextResponse.redirect(url);
+  }
+
+  // Agar user already login hai
+  // aur /login kholne ki koshish kare,
+  // to dashboard par bhejo.
+  if (user && pathname === "/login") {
+    const url = request.nextUrl.clone();
+
+    url.pathname = "/";
 
     return NextResponse.redirect(url);
   }
